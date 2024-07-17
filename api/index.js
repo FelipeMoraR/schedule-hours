@@ -2,6 +2,10 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 
+if (process.env.NODE_ENV !== 'production'){
+    require('dotenv').config();
+}
+
 
 
 //This allow send json to the db, in POST.JS you're sending a json.
@@ -15,6 +19,9 @@ const postRouter = require('./routes/Post');
 
 app.use('/post', postRouter);
 
-app.listen(3001, () => {
-    console.info('toi parao en el puerto 3001');
+const PORT = process.env.PORT || 3001;
+
+
+app.listen(PORT, () => {
+    console.info('toi parao en el puerto', PORT);
 });
