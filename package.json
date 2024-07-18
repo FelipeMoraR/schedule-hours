@@ -5,15 +5,17 @@
     "install:client": "cd client && npm install",
     "install:backend": "cd api && npm install",
     "install": "npm run install:client && npm run install:backend",
-    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
-    "start:backend": "cd api && npm start",
-    "start:frontend": "cd client && npm start",
-    "build:frontend": "cd client && npm run build"
+    "build:frontend": "cd client && npm run build",
+    "start": "npm run build:frontend && npm run start:backend",
+    "start:backend": "cd api && node index.js",
+    "start:frontend": "cd client && npm start"
   },
   "devDependencies": {
     "concurrently": "^6.2.0"
   },
   "dependencies": {
-    "axios": "^1.7.2"
+    "axios": "^1.7.2",
+    "express": "^4.17.1"
   }
 }
+
