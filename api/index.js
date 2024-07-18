@@ -18,7 +18,7 @@ const postRouter = require('./routes/Post');
 app.use('/post', postRouter);
 
 
-// Ejemplo de una ruta de API
+// Example of an API
 app.get('/api/data', (req, res) => {
   res.json({ message: 'Hello from the API!' });
 });

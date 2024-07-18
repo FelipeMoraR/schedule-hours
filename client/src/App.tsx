@@ -5,14 +5,14 @@ import { useEffect } from "react";
 function App() {
 
   useEffect(() => {
-    axios.get('http://localhost:3001/post').then((response) => {
+    axios.get('http://localhost:5000/post').then((response) => {
       console.log(response);
     });
   }, []);
 
   return (
     <>
-      <div className='sexito'> </div>
+      <div className='sexito'> esto es algo nuevo </div>
     </>
   )
 }

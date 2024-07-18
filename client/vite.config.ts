@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: 'dist'
+    outDir: 'dist' // Defines the output directory to run the frontend
   },
   server: {
     host: true, // lisent all interfaces
