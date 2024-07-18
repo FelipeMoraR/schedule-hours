@@ -7,7 +7,8 @@
     "install": "npm run install:client && npm run install:backend",
     "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
     "start:backend": "cd api && npm start",
-    "start:frontend": "cd client && npm start"
+    "start:frontend": "cd client && npm start",
+    "build:frontend": "cd client && npm run build"
   },
   "devDependencies": {
     "concurrently": "^6.2.0"
