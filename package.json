@@ -6,12 +6,13 @@
     "install:backend": "cd api && npm install",
     "install": "npm run install:client && npm run install:backend",
     "build:frontend": "cd client && npm run build",
-    "start": "npm run build:frontend && npm run start:backend",
+    "start": "npm run build:frontend && npm run start:backend && sqx:migrate",
     "start:backend": "cd api && node index.js",
     "start:frontend": "cd client && npm start",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd api && nodemon index.js",
-    "dev:frontend": "cd client && npm run dev"
+    "dev:frontend": "cd client && npm run dev",
+    "sqx:migrate": "cd api && npx sequelize-cli db:migrate"
   },
   "devDependencies": {
     "concurrently": "^6.2.0",
