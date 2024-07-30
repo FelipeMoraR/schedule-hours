@@ -7,8 +7,7 @@ const { DeletedAt } = require('@sequelize/core/decorators-legacy');
 
 module.exports = (sequelize, DataTypes) => {
   class Log extends Model {
-    @DeletedAt
-    deletedAt;
+
     static associate(models) {
       // define association here
     }
