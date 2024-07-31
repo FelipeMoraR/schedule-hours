@@ -3,6 +3,8 @@ const path = require('path');
 const app = express();
 const cors = require('cors');
 
+const logRoutes = require('./routes/logRoutes');
+
 if (process.env.NODE_ENV !== 'production'){
     require('dotenv').config();
 }
@@ -22,6 +24,9 @@ app.use('/post', postRouter);
 app.get('/api/data', (req, res) => {
   res.json({ message: 'Hello from the API!' });
 });
+
+// Route to test log
+app.use('/api/logs', logRoutes);
 
 
 // Serve static files from your frontend's 'dist' folder
