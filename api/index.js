@@ -2,8 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const cors = require('cors');
-
-const logRoutes = require('./routes/logRoutes');
+//const logRoutes = require('./logic/routes/routesControll');
 
 if (process.env.NODE_ENV !== 'production'){
     require('dotenv').config();
@@ -16,8 +15,14 @@ app.use(express.json());
 app.use(cors());
 
 //routers 
-const postRouter = require('./routes/Post');
-app.use('/post', postRouter);
+const router = require('./logic/routes/routes');
+app.use(
+  `/auth/api`, router
+);
+
+
+//const postRouter = require('./logic/routes/Post');
+//app.use('/post', postRouter);
 
 
 // Example of an API
@@ -26,7 +31,7 @@ app.get('/api/data', (req, res) => {
 });
 
 // Route to test log
-app.use('/api/logs', logRoutes);
+//app.use('/api/logs', logRoutes);
 
 
 // Serve static files from your frontend's 'dist' folder
