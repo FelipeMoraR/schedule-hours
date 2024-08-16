@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Log, test } = require('../../models');
+const { Log, TYPEUSER, USER } = require('../../models');
 
 router.post('/create-log', async (req, res) => {
     try {
@@ -17,17 +17,46 @@ router.post('/create-log', async (req, res) => {
 });
 
 
-router.get('/test-post', async (req, res) => {
-    const listTest = await test.findAll();
-    res.json(listTest);
+router.post('/create-type-user', async (req, res) => {
+    try {
+        const { name } = req.body
+
+        const newTypeUser = await TYPEUSER.create({
+            name: name
+        });
+        res.status(201).json(newTypeUser);
+     } catch (error) {
+        res.status(500).json({ error: error.message });
+     }
 });
 
+router.post('/create-user', async (req, res) => {
+    try {
+        const { username,
+            password,
+            first_name,
+            last_name,
+            run,
+            run_dv,
+            age,
+            id_type_user } = req.body
 
-router.post('/test-post', async (req, res) => {
-    const post = req.body;
-    await test.create(post);
-    res.json(post);
+        const newUser = await USER.create({
+            username: username,
+            password: password,
+            first_name: first_name,
+            last_name: last_name,
+            run: run,
+            run_dv: run_dv,
+            age: age,
+            id_type_user: id_type_user
+        });
+        res.status(201).json(newUser);
+     } catch (error) {
+        res.status(500).json({ error: error.message });
+     }
 });
+
 
 
 
