@@ -2,7 +2,7 @@
 const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class ClassCategory extends Model {
+  class CLASS_CATEGORY extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -10,12 +10,12 @@ module.exports = (sequelize) => {
      */
     static associate(models) {
       // Define associations here
-      this.belongsTo(models.Category, { foreignKey: 'id_category' });
-      this.belongsTo(models.Class, { foreignKey: 'id_class' });
+      this.belongsTo(models.CATEGORY, { foreignKey: 'id_category' });
+      this.belongsTo(models.CLASS, { foreignKey: 'id_class' });
     }
   }
 
-  ClassCategory.init({
+  CLASS_CATEGORY.init({
     id_class_category: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -42,11 +42,11 @@ module.exports = (sequelize) => {
     }
   }, {
     sequelize,
-    modelName: 'ClassCategory', 
+    modelName: 'CLASS_CATEGORY', 
     tableName: 'CLASS_CATEGORY', 
     timestamps: true,       
     paranoid: true          
   });
 
-  return ClassCategory;
+  return CLASS_CATEGORY;
 };

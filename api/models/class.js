@@ -2,7 +2,7 @@
 const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class Class extends Model {
+  class CLASS extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -12,7 +12,7 @@ module.exports = (sequelize) => {
     }
   }
 
-  Class.init({
+  CLASS.init({
     id_class: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -38,16 +38,17 @@ module.exports = (sequelize) => {
     id_status: {
       type: DataTypes.INTEGER,
       references: {
-        model: 'STATUS', // Table name for the referencekey: 'id_status'
+        model: 'STATUS',  // Table name for the referencekey: 'id_status'
+        key: 'id_status' 
       },
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL'
     }
   }, {
     sequelize,
-    modelName: 'Class',
+    modelName: 'CLASS',
     tableName: 'CLASS', // Use the exact table nametimestamps: true,   // Automatically handles `createdAt` and `updatedAt`paranoid: true// Enable soft deletes with `deletedAt`
   });
 
-  return Class;
+  return CLASS;
 };

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Log, TYPEUSER, USER } = require('../../models');
+const { registerUser } = require('../controller/controller')
 
 router.post('/create-log', async (req, res) => {
     try {
@@ -16,7 +17,6 @@ router.post('/create-log', async (req, res) => {
      }
 });
 
-
 router.post('/create-type-user', async (req, res) => {
     try {
         const { name } = req.body
@@ -30,33 +30,7 @@ router.post('/create-type-user', async (req, res) => {
      }
 });
 
-router.post('/create-user', async (req, res) => {
-    try {
-        const { username,
-            password,
-            first_name,
-            last_name,
-            run,
-            run_dv,
-            age,
-            id_type_user } = req.body
-
-        const newUser = await USER.create({
-            username: username,
-            password: password,
-            first_name: first_name,
-            last_name: last_name,
-            run: run,
-            run_dv: run_dv,
-            age: age,
-            id_type_user: id_type_user
-        });
-        res.status(201).json(newUser);
-     } catch (error) {
-        res.status(500).json({ error: error.message });
-     }
-});
-
+router.post('/create-user', registerUser);
 
 
 

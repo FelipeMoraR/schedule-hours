@@ -21,15 +21,36 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,     
       allowNull: false          
     },
-    username: DataTypes.STRING(50),
-    password: DataTypes.STRING(50),
-    first_name: DataTypes.STRING(100),
-    last_name: DataTypes.STRING(100),
-    second_last_name: DataTypes.STRING(100),
-    run: DataTypes.INTEGER,
-    run_dv: DataTypes.STRING(1),
+    username: {
+      type: DataTypes.STRING(10),
+      allowNull: false
+    },
+    password: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
+    first_name: {
+      type: DataTypes.STRING(20),
+      allowNull: false
+    },
+    last_name: {
+      type: DataTypes.STRING(20),
+      allowNull: false
+    },
+    second_last_name: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    run: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    run_dv: {
+      type: DataTypes.STRING(1),
+      allowNull: false
+    },
     description: {
-      type: DataTypes.STRING(500),
+      type: DataTypes.STRING(200),
       allowNull: true 
     },
     profile_photo: {

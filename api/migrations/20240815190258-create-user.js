@@ -10,23 +10,23 @@ module.exports = {
         primaryKey: true
       },
       username: {
-        type: Sequelize.STRING(50),
+        type: Sequelize.STRING(10),
         allowNull: false
       },
       password: {
-        type: Sequelize.STRING(50),
+        type: Sequelize.STRING(100),
         allowNull: false
       },
       first_name: {
-        type: Sequelize.STRING(100),
+        type: Sequelize.STRING(20),
         allowNull: false
       },
       last_name: {
-        type: Sequelize.STRING(100),
+        type: Sequelize.STRING(20),
         allowNull: false
       },
       second_last_name: {
-        type: Sequelize.STRING(100),
+        type: Sequelize.STRING(20),
         allowNull: true
       },
       run: {

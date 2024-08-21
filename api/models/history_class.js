@@ -2,7 +2,7 @@
 const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class HistoryClass extends Model {
+  class HISTORY_CLASS extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,11 +11,11 @@ module.exports = (sequelize) => {
     static associate(models) {
       // Define associations here
       this.belongsTo(models.USER, { foreignKey: 'id_user' });
-      this.belongsTo(models.Class, { foreignKey: 'id_class' });
+      this.belongsTo(models.CLASS, { foreignKey: 'id_class' });
     }
   }
 
-  HistoryClass.init({
+  HISTORY_CLASS.init({
     id_history_class: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -50,11 +50,11 @@ module.exports = (sequelize) => {
     }
   }, {
     sequelize,
-    modelName: 'HistoryClass', 
+    modelName: 'HISTORY_CLASS', 
     tableName: 'HISTORY_CLASS', 
     timestamps: true,       
     paranoid: true          
   });
 
-  return HistoryClass;
+  return HISTORY_CLASS;
 };
