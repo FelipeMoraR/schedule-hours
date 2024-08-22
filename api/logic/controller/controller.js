@@ -7,34 +7,41 @@ const secret = process.env.JWT_SECRET;
 
 
 const verifyToken = async (req, res, next) => {
-    const authToken = req.headers.authorization;
+    try{
+        const authToken = req.headers.authorization;
 
-    if(!authToken || !authToken.startsWith('Bearer ')){
-        return res.status(401).send({ status: 401, message: 'Authorization error'});
-    }
+        if(!authToken || !authToken.startsWith('Bearer ')){
+            return res.status(401).send({ status: 401, message: 'Authorization error'});
+        }
 
-    const token = authToken.split(' ')[1];
+        const token = authToken.split(' ')[1];
 
-    const [resultSearchToken] = await db.sequelize.query('CALL SearchToken(:token);', 
-            {
-                replacements: {
-                    token: token
-                },
-                type: db.Sequelize.QueryTypes.RAW
-            }
-        );
+        const [resultSearchToken] = await db.sequelize.query('CALL SearchToken(:token);', 
+                {
+                    replacements: {
+                        token: token
+                    },
+                    type: db.Sequelize.QueryTypes.RAW
+                }
+            );
     
-    if(resultSearchToken.token_exist === 1){
-        return res.status(401).send({ status: 401, message: "Invalid token"});
-    }
+        if(resultSearchToken.token_exist === 1){
+            return res.status(401).send({ status: 401, message: "Invalid token"});
+        }
     
 
-    jwt.verify(token, secret, (err, decoded) => {
-        if (err) return res.status(401).send({ status: 401, message: 'Unauthorizated'});
+        jwt.verify(token, secret, (err, decoded) => {
+            if (err) return res.status(401).send({ status: 401, message: 'Unauthorizated'});
 
-        req.id = decoded.id;
-        next();
-    })
+            req.id = decoded.id;
+            next(); //This execute the next function on the routes.
+        })
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 500, error: 'Something went wrong'})
+    }
+    
 }
 
 const registerUser = async (req, res) => {
@@ -96,6 +103,8 @@ const loginUser = async (req, res) => {
             }
         );
 
+        if (!result) return res.status(404).json({status: 404, message: "User doesnt exist"});
+        
         const resPassword = result.password;
         const resId = result.id_user
 
@@ -122,25 +131,32 @@ const loginUser = async (req, res) => {
 }
 
 const logoutUser = async (req, res) => {
-    const authToken = req.headers.authorization;
+    try{
+        const authToken = req.headers.authorization;
 
-    if(!authToken || !authToken.startsWith('Bearer ')){
-        return res.status(401).send({status: 401, message: 'Authorization error'});
-    }
+        if(!authToken || !authToken.startsWith('Bearer ')){
+            return res.status(401).send({status: 401, message: 'Authorization error'});
+        }
 
-    const token = authToken.split(' ')[1]; //This ensures we are only using the token  
+        const token = authToken.split(' ')[1]; //This ensures we are only using the token  
 
-    await db.sequelize.query('CALL InsertToken(:token);', 
-            {
-                replacements: {
-                    token: token
-                },
-                type: db.Sequelize.QueryTypes.RAW
-            }
-        );
+        await db.sequelize.query('CALL InsertToken(:token);', 
+                {
+                    replacements: {
+                        token: token
+                    },
+                    type: db.Sequelize.QueryTypes.RAW
+                }
+            );
 
     
-    res.status(200).send({status: 200, message: "Logout successful"});
+        res.status(200).send({status: 200, message: "Logout successful"});
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 500, error: 'Something went wrong'})
+    }
+    
 }
 
 module.exports = {
