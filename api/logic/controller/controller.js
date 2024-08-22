@@ -5,6 +5,38 @@ const db = require('../../models/index');
 const secret = process.env.JWT_SECRET;
 
 
+
+const verifyToken = async (req, res, next) => {
+    const authToken = req.headers.authorization;
+
+    if(!authToken || !authToken.startsWith('Bearer ')){
+        return res.status(401).send({ status: 401, message: 'Authorization error'});
+    }
+
+    const token = authToken.split(' ')[1];
+
+    const [resultSearchToken] = await db.sequelize.query('CALL SearchToken(:token);', 
+            {
+                replacements: {
+                    token: token
+                },
+                type: db.Sequelize.QueryTypes.RAW
+            }
+        );
+    
+    if(resultSearchToken.token_exist === 1){
+        return res.status(401).send({ status: 401, message: "Invalid token"});
+    }
+    
+
+    jwt.verify(token, secret, (err, decoded) => {
+        if (err) return res.status(401).send({ status: 401, message: 'Unauthorizated'});
+
+        req.id = decoded.id;
+        next();
+    })
+}
+
 const registerUser = async (req, res) => {
     try{
         const { username, 
@@ -43,13 +75,77 @@ const registerUser = async (req, res) => {
     
     catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Something went wrong'})
+        res.status(500).json({ status: 500, error: 'Something went wrong'})
     }
     
 
 }
 
+const loginUser = async (req, res) => {
+    try{
+        const { username, 
+            password, 
+        } = req.body;
+    
+        const [result] = await db.sequelize.query('CALL LoginUser(:username);', 
+            {
+                replacements: {
+                    username: username,
+                },
+                type: db.Sequelize.QueryTypes.RAW
+            }
+        );
+
+        const resPassword = result.password;
+        const resId = result.id_user
+
+        bcrypt.compare(password, resPassword, (err, isMatch) => {
+            if (err) throw err; 
+            if(!isMatch) return res.status(401).json({status: 401, message: "Password incorrect"});  
+
+            const objToken = { 
+                id: resId,
+                username: username 
+            }
+
+            const token = jwt.sign(objToken, secret, {
+                expiresIn: 1800 // 30 min in seconds
+            });
+
+            res.status(200).send({ status: 200, auth: true, token });
+        });
+    }    
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 500, error: 'Something went wrong'})
+    }
+}
+
+const logoutUser = async (req, res) => {
+    const authToken = req.headers.authorization;
+
+    if(!authToken || !authToken.startsWith('Bearer ')){
+        return res.status(401).send({status: 401, message: 'Authorization error'});
+    }
+
+    const token = authToken.split(' ')[1]; //This ensures we are only using the token  
+
+    await db.sequelize.query('CALL InsertToken(:token);', 
+            {
+                replacements: {
+                    token: token
+                },
+                type: db.Sequelize.QueryTypes.RAW
+            }
+        );
+
+    
+    res.status(200).send({status: 200, message: "Logout successful"});
+}
 
 module.exports = {
-    registerUser
+    registerUser,
+    loginUser,
+    logoutUser,
+    verifyToken
 }

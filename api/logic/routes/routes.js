@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Log, TYPEUSER, USER } = require('../../models');
-const { registerUser } = require('../controller/controller')
+const { registerUser, loginUser, logoutUser, verifyToken } = require('../controller/controller')
 
 router.post('/create-log', async (req, res) => {
     try {
@@ -30,8 +30,8 @@ router.post('/create-type-user', async (req, res) => {
      }
 });
 
-router.post('/create-user', registerUser);
-
-
+router.post('/create-user', verifyToken, registerUser);
+router.post('/login-user', loginUser);
+router.post('/logout-user', logoutUser);
 
 module.exports = router;
