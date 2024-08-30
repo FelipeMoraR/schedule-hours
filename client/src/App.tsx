@@ -1,19 +1,23 @@
-import './App.css'
-import axios from "axios";
-import { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage/HomePage';
+import ProfileUser from './pages/ProfileUser/ProfileUser';
+import PrivateRoute from './routes/PrivateRoutes'; 
+
 
 function App() {
 
-  useEffect(() => {
-    axios.get('http://localhost:5000/post').then((response) => {
-      console.log(response);
-    });
-  }, []);
-
   return (
-    <>
-      <div className='sexito'> esto es algo nuevo </div>
-    </>
+    <Router>
+      <Routes>
+        {/*Public Routes*/}
+        <Route path = "/" element = {<HomePage/>}/>
+
+
+        {/*Private Routes*/}
+        <Route path = '/profile-user' element = {<PrivateRoute element = {<ProfileUser/>}/>} />
+
+      </Routes>
+    </Router>
   )
 }
 

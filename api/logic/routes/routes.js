@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Log, TYPEUSER, USER } = require('../../models');
+const { Log, TYPEUSER } = require('../../models');
 const { registerUser, loginUser, logoutUser, verifyToken } = require('../controller/controller')
 
 router.post('/create-log', async (req, res) => {
@@ -30,7 +30,7 @@ router.post('/create-type-user', async (req, res) => {
      }
 });
 
-router.post('/create-user', verifyToken, registerUser);
+router.post('/create-user', verifyToken, registerUser); //This is how you can add the middleware to protect routes.
 router.post('/login-user', loginUser);
 router.post('/logout-user', logoutUser);
 
