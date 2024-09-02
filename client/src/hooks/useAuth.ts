@@ -7,6 +7,7 @@ export function useAuth() {
 
     const fetchVerifyToken = async (token: string, url: string) => {
         try{
+            
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
@@ -14,12 +15,13 @@ export function useAuth() {
                     'Authorization': `Bearer ${token}`
                 }
             });
+            
 
             if (!response.ok){
                 console.error('Error in the response');
                 return false
             }
-
+            
             return true
         }
         catch(err: any){
@@ -31,7 +33,7 @@ export function useAuth() {
     const verfyToken = async () => {
         const token = localStorage.getItem('userToken');
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
-        const url = apiUrl + 'auth/api/verify-token';
+        const url = apiUrl + '/auth/api/verify-token';
         
 
         if(!token){
