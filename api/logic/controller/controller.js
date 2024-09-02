@@ -35,7 +35,7 @@ const createTypeUser = async(req, res) => {
 
 
 const statusVerifyToken = async(req, res) => {
-    res.status(200).send({ status: 200, message: req.info});
+    res.send({ status: 200, message: req.info});
 }
 
 const midleWareVerifyToken = async (req, res, next) => {

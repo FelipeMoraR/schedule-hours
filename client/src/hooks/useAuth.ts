@@ -15,8 +15,11 @@ export function useAuth() {
                     'Authorization': `Bearer ${token}`
                 }
             });
-        
-            if (response.status !== 200){
+            
+            const data = await response.json(); // Here extract the body of the response
+            
+            
+            if (data.status !== 200){
                 console.error('Error in the response');
                 return false
             }
@@ -34,6 +37,12 @@ export function useAuth() {
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
         const url = apiUrl + '/auth/api/verify-token';
         
+        if(!url.includes('/auth/api/verify-token')){
+            setError('Bad url');
+            setIsLoading(false);
+            setIsAuthenticated(false);
+            return
+        }
 
         if(!token){
             setError('Token not found');
