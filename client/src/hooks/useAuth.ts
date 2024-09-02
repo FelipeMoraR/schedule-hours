@@ -15,9 +15,8 @@ export function useAuth() {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            
-
-            if (!response.ok){
+        
+            if (response.status !== 200){
                 console.error('Error in the response');
                 return false
             }

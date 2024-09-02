@@ -34,7 +34,11 @@ const createTypeUser = async(req, res) => {
 }
 
 
-const verifyToken = async (req, res, next) => {
+const statusVerifyToken = async(req, res) => {
+    res.status(200).send({ status: 200, message: req.info});
+}
+
+const midleWareVerifyToken = async (req, res, next) => {
     try{
         const authToken = req.headers.authorization;
 
@@ -191,6 +195,7 @@ module.exports = {
     registerUser,
     loginUser,
     logoutUser,
-    verifyToken,
-    createTypeUser
+    midleWareVerifyToken,
+    createTypeUser,
+    statusVerifyToken
 }

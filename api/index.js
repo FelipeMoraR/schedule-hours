@@ -20,24 +20,11 @@ app.use(
   `/auth/api`, router
 );
 
+app.use('/auth/api/*', (req, res) => {
+  res.status(404).json({ error: 'API route not found' });
+}); //Controlling the bad url requests
 
 
-
-
-// Example of an API
-app.get('/api/data', (req, res) => {
-  res.json({ message: 'Hello from the API!' });
-});
-
-
-
-// Serve static files from your frontend's 'dist' folder
-app.use(express.static(path.join(__dirname, '../client/dist')));
-
-// Path to handle all other requests and serve the index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-});
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
