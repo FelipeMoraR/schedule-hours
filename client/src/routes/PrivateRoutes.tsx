@@ -14,7 +14,7 @@ function PrivateRoute({ element }: PrivateRouteProps) {
         width: '500px'
     }
 
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, error } = useAuth();
     const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true);
     const location = useLocation();
 
@@ -27,6 +27,12 @@ function PrivateRoute({ element }: PrivateRouteProps) {
     if(isLoadingAuth){
         return (
             <div style={divStyle}>Loading...</div>
+        )
+    }
+
+    if(error !== ''){
+        return(
+            <div>Error: {error}</div>
         )
     }
 

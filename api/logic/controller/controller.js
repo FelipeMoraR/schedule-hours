@@ -5,6 +5,34 @@ const db = require('../../models/index');
 const secret = process.env.JWT_SECRET;
 
 
+const createTypeUser = async(req, res) => {
+    try{
+        const {
+            name 
+        } = req.body;
+
+        const [result] = await db.sequelize.query('CALL CreateUserType(:name);', 
+            {
+                replacements: {
+                    name: name
+                },
+                type: db.Sequelize.QueryTypes.RAW
+            }
+        );
+
+        if(!result){
+            return res.status(404).send({ status: 404, message: 'An error happend'});
+        }
+
+        res.status(200).send({ status: 200, message: result});
+    }
+
+    catch (err){
+        console.error(err);
+        res.status(500).json({ status: 500, error: 'Something went wrong'})
+    }
+}
+
 
 const verifyToken = async (req, res, next) => {
     try{
@@ -33,7 +61,7 @@ const verifyToken = async (req, res, next) => {
         jwt.verify(token, secret, (err, decoded) => {
             if (err) return res.status(401).send({ status: 401, message: 'Unauthorizated'});
 
-            req.id = decoded.id;
+            req.info = decoded;
             next(); //This execute the next function on the routes.
         })
     }
@@ -163,5 +191,6 @@ module.exports = {
     registerUser,
     loginUser,
     logoutUser,
-    verifyToken
+    verifyToken,
+    createTypeUser
 }
