@@ -24,10 +24,10 @@ app.use('/auth/api/*', (req, res) => {
   res.status(404).json({ error: 'API route not found' });
 });
 
-// Serve static files from your frontend's 'dist' folder
+// Serve static files (JS and CSS) from your frontend's 'dist' folder
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
-// Path to handle all other requests and serve the index.html
+// Path to handle all other requests and serve the index.html that doesn't worked with the previus code.
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });

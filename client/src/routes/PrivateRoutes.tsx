@@ -1,22 +1,15 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { PrivateRouteProps } from '../interfaces/props';
+import { IPrivateRouteProps } from '../interfaces/props';
 import { useEffect, useState } from 'react';
 
 
 
-function PrivateRoute({ element }: PrivateRouteProps) {
-
-    //Temporally
-    const divStyle = {
-        backgroundColor: 'red',
-        height: '500px',
-        width: '500px'
-    }
+function PrivateRoute({ element }: IPrivateRouteProps) {
 
     const { isAuthenticated, isLoading, error } = useAuth();
     const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true);
-    const location = useLocation();
+    const location = useLocation(); //This extract the actual url where the user is.
 
     useEffect(() => {
         if(!isLoading){
@@ -26,11 +19,11 @@ function PrivateRoute({ element }: PrivateRouteProps) {
 
     if(isLoadingAuth){
         return (
-            <div style={divStyle}>Loading...</div>
+            <div>Loading...</div>
         )
     }
 
-    if(error !== ''){
+    if(error === 'Bad url' || error === 'Token not found'){
         return(
             <div>Error: {error}</div>
         )
@@ -39,7 +32,7 @@ function PrivateRoute({ element }: PrivateRouteProps) {
     return isAuthenticated ? (
         element
     ) : (
-        <Navigate to = "/" state = {{ from: location }} />
+        <Navigate to = "/login-user" state = {{ from: location }} /> //state helps to save the address(url) from where the user came and when he logs into the page we can use that info to redirect him previus page he was trying to join the first time.
     );
 }
 
