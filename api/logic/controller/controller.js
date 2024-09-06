@@ -138,7 +138,7 @@ const loginUser = async (req, res) => {
         if (!result) return res.status(404).json({status: 404, message: "User doesnt exist"});
         
         const resPassword = result.password;
-        const resId = result.id_user
+        const resId = result.id_user;
 
         bcrypt.compare(password, resPassword, (err, isMatch) => {
             if (err) throw err; 
@@ -172,7 +172,7 @@ const logoutUser = async (req, res) => {
 
         const token = authToken.split(' ')[1]; //This ensures we are only using the token  
 
-        await db.sequelize.query('CALL InsertToken(:token);', 
+        const [result] = await db.sequelize.query('CALL InsertToken(:token);', 
                 {
                     replacements: {
                         token: token
@@ -180,9 +180,11 @@ const logoutUser = async (req, res) => {
                     type: db.Sequelize.QueryTypes.RAW
                 }
             );
-
-    
-        res.status(200).send({status: 200, message: "Logout successful"});
+        
+        const statusInsertedToken = result.token_inserted
+        
+        statusInsertedToken == 1 ? res.status(200).send({status: 200, message: "Logout successful, token inserted"}) : res.status(200).send({status: 200, message: "Logout successful, token already exist in db"});
+            
     }
     catch (err) {
         console.error(err);

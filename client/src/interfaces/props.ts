@@ -11,6 +11,7 @@ export interface IModuleCss {
 }
 
 export interface IButton{
+    id: string;
     text: string;
     type: any;
     classes: Array<string>;
@@ -29,4 +30,15 @@ export interface IInputFieldProps {
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void; //This allow the access to the event property.
     //onChange is a property of react that waits a fuction to handle the change event.
     //React.ChangeEvent this is an interface that describes a change event. 
+}
+
+
+export interface IModal {
+    id: string;
+    type: string;
+    title: string;
+    paragraph?: string;
+    isOpen: boolean;
+    onClose: () => void;
+    classes: Array<string>;
 }

@@ -1,15 +1,17 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage/HomePage';
 import LoginPage from './pages/LoginPage/LoginPage';
 import ProfileUser from './pages/ProfileUser/ProfileUser';
 import NotFound from './pages/NotFound/NotFound';
 import PrivateRoute from './routes/PrivateRoutes'; 
-
+import NavBar from './components/NavBar/NavBar';
 
 function App() {
 
   return (
-    <Router>
+    <>
+      <NavBar/>
+      
       <Routes>
         {/*Public Routes*/}
         <Route path = '/' element = {<HomePage/>}/>
@@ -22,7 +24,9 @@ function App() {
         <Route path = '*' element = {<NotFound/>}/>
 
       </Routes>
-    </Router>
+      
+    </>
+    
   )
 }
 

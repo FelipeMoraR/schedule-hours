@@ -23,10 +23,8 @@ function PrivateRoute({ element }: IPrivateRouteProps) {
         )
     }
 
-    if(error === 'Bad url' || error === 'Token not found'){
-        return(
-            <div>Error: {error}</div>
-        )
+    if(error !== ''){
+        console.error(error);
     }
 
     return isAuthenticated ? (
