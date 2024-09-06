@@ -12,7 +12,9 @@ function LoginForm ()  {
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const { showModal, closeModal, isModalOpen } = useModal();
-    
+    const [errorLogin, setErrorLogin] = useState<string | null>(null);
+
+
     const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
         if(name === 'username'){
@@ -37,7 +39,7 @@ function LoginForm ()  {
             
             if (data.status !== 200){
                 console.error('Error ' + data.status + ' in the response, ' + data.message);
-                return data.status
+                return data
             }
             
             return data
@@ -64,6 +66,7 @@ function LoginForm ()  {
 
             if(!dataLogin.token){
                 closeModal();
+                setErrorLogin('Error ' + dataLogin.message);
                 return
             }
 
@@ -101,6 +104,15 @@ function LoginForm ()  {
         
 
             <form onSubmit={handleSubmit}>
+                <div className='error'>
+                    {
+                        errorLogin !== null ? (
+                            <div>
+                                {errorLogin}
+                            </div>
+                        ) : null
+                    }
+                </div>
                 <InputField
                     label = 'Nombre Usuario'
                     name = 'username'
