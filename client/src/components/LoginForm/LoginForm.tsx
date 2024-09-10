@@ -84,16 +84,6 @@ function LoginForm ()  {
     return(
         <>
             <Modal
-                id = 'modal1'
-                type = 'informative'
-                title = 'Titulo'
-                paragraph = 'si'
-                isOpen = {isModalOpen('modal1')}
-                classes = {['modal-infomative-grey']}
-                onClose={closeModal}
-            />
-
-            <Modal
                 id = 'loaderLogin'
                 type = 'loader'
                 title = 'Titulo loader'
@@ -142,11 +132,6 @@ function LoginForm ()  {
                 
             </form>
 
-            <div onClick={() => {
-                showModal('modal1');
-            }}>
-                Open modal 1
-            </div>
         </>
         
     )

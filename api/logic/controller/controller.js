@@ -4,7 +4,6 @@ const bcrypt = require('bcryptjs');
 const db = require('../../models/index');
 const secret = process.env.JWT_SECRET;
 
-
 const createTypeUser = async(req, res) => {
     try{
         const {

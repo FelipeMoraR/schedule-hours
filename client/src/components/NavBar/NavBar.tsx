@@ -4,7 +4,7 @@ import handlerNavigationNavBar from '../../utils/handlerNavigationNavBar';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 function NavBar() {
-    const [showLogout, setshowLogout] = useState<boolean>(false);
+    const [inviteView, setsInviteView] = useState<boolean>(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -53,19 +53,20 @@ function NavBar() {
 
         if(statusLogoutUser === 200){
             localStorage.removeItem('userToken');
-            setshowLogout(false);
+            setsInviteView(false);
             navigate('/');
             return
         }
     }
 
-    const handleShowLogout = () => {
+    const handleShowInviteView = () => {
         const token = localStorage.getItem('userToken') || false;
-        setshowLogout(!!token);
+        setsInviteView(!!token);
     }
 
     useEffect(() => {
-        handleShowLogout();
+        handleShowInviteView();
+        console.log(inviteView)
     }, [location])
 
     return(
@@ -80,8 +81,10 @@ function NavBar() {
                     classes = {['']}
                     onClick = {handleButton}
                 />
+
+
                 {
-                    showLogout ? (
+                    inviteView ? (
                         <Button
                             id = 'logout'
                             text = 'LOGOUT'
@@ -89,6 +92,18 @@ function NavBar() {
                             classes = {['']}
                             onClick = {handleLogOut}
                         />
+                    ) : null
+                }
+
+                {
+                    !inviteView ? (
+                        <Button
+                            id = 'irRegister'
+                            text = 'Register'
+                            type = 'button'
+                            classes = {['']}
+                            onClick = {handleButton}
+                        /> 
                     ) : null
                 }
                 

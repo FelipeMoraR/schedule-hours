@@ -5,6 +5,9 @@ function handlerNavigationNavBar(id:string, navigate: (path: string) => void) {
         case 'irLogin':
             navigate('/login-user');
             return
+        case 'irRegister':
+            navigate('/register-user');
+            return
         default:
             navigate('/');
             return

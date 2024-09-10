@@ -10,6 +10,10 @@ export interface IModuleCss {
     [key: string]: string //This is an index signature to allow iterations in an object.
 }
 
+export interface IRegisterForm {
+    classes: Array<string>;
+}
+
 export interface IButton{
     id: string;
     text: string;
@@ -24,7 +28,12 @@ export interface IInputFieldProps {
     name: string;
     required: boolean | undefined;
     placeholder?: string;
-    value?: string;
+    value?: any;
+    hidden?: boolean;
+    max?:number;
+    min?:number;
+    maxLength?: number;
+    minLength?: number;
     defaultValue?: string;
     classes: Array<string>;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void; //This allow the access to the event property.
