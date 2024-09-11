@@ -2,11 +2,14 @@
 function handlerNavigationNavBar(id:string, navigate: (path: string) => void) {
     
     switch (id){
-        case 'irLogin':
+        case 'goLogin':
             navigate('/login-user');
             return
-        case 'irRegister':
+        case 'goRegister':
             navigate('/register-user');
+            return
+        case 'goProfile':
+            navigate('/profile-user');
             return
         default:
             navigate('/');

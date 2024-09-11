@@ -1,5 +1,11 @@
 import React from "react";
 
+export interface IAuthContextType {
+    isLogedContext: boolean;
+    login: (username: string, password:string) => void;
+    logout: () => void;
+}
+
 
 
 export interface IPrivateRouteProps {

@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import LoginForm  from '../../components/LoginForm/LoginForm';
-import { useModal } from '../../utils/useModal';
+import { useModal } from '../../utils/UseModal';
 import Modal from '../../components/Modal/Modal';
 import { useEffect } from 'react';
 
@@ -29,8 +29,6 @@ function LoginPage() {
                 <h1>Login</h1>
                 <LoginForm/>
             </div>
-
-
         </>
     )
 }   

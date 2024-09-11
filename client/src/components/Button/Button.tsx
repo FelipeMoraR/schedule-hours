@@ -1,6 +1,6 @@
 import styles from './Button.module.css';
 import { IButton } from '../../interfaces/props';
-import formatClass from '../../utils/formatClass';
+import formatClass from '../../utils/FormatClass';
 
 function Button ({id, text, type, classes, onClick}: IButton){
     

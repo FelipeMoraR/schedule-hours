@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { IModal } from '../../interfaces/props';
-import formatClass from '../../utils/formatClass';
+import formatClass from '../../utils/FormatClass';
 import styles from './Modal.module.css';
 
 function Modal ({id, type, title, paragraph, isOpen, classes, onClose}  : IModal){

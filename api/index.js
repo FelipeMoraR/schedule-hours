@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const cors = require('cors');
-
+const cookieParser = require('cookie-parser');
 
 if (process.env.NODE_ENV !== 'production'){
     require('dotenv').config();
@@ -12,7 +12,12 @@ if (process.env.NODE_ENV !== 'production'){
 app.use(express.json());
 
 //Corse to use third apis conexions
-app.use(cors());
+app.use(cors({
+  origin: process.env.URL_FRONT,  
+  credentials: true // This allow work with cookies
+}));
+
+app.use(cookieParser());
 
 //routers 
 const router = require('./logic/routes/routes');

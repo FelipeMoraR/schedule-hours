@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import verifyCookie from "../utils/VerifyCookie";
+import { useLocation } from "react-router-dom";
 
 export function useAuth() {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
-
+    const location = useLocation();
+    
     const fetchVerifyToken = async (token: string, url: string) => {
         try{
             
@@ -32,8 +35,9 @@ export function useAuth() {
         }
     }
 
+
+
     const verfyToken = async () => {
-        const token = localStorage.getItem('userToken');
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
         const url = apiUrl + '/auth/api/verify-token';
         
@@ -43,6 +47,8 @@ export function useAuth() {
             setIsAuthenticated(false);
             return
         }
+
+        const token = await verifyCookie();
 
         if(!token){
             setError('Token not found');
@@ -61,7 +67,7 @@ export function useAuth() {
         }
 
         setIsAuthenticated(true);
-        setIsLoading(false)
+        setIsLoading(false);
         return
 
        
@@ -69,7 +75,7 @@ export function useAuth() {
 
     useEffect(() => {
         verfyToken();
-    }, []); 
+    }, [location]); 
 
     
     return { isAuthenticated, isLoading, error};

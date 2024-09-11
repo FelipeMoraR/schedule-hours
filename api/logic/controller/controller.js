@@ -151,8 +151,19 @@ const loginUser = async (req, res) => {
             const token = jwt.sign(objToken, secret, {
                 expiresIn: 1800 // 30 min in seconds
             });
-
-            res.status(200).send({ status: 200, auth: true, token });
+            
+            res.status(200).cookie('objInfo', token, { //This look like encoded because the const objInfo is a special character to prevent errors, first thing objinfo is transformered to a string with json.stringify()
+                    sameSite: 'strict', // if you declare it like none this in local wont work
+                    secure: false,
+                    path: '/',
+                    expires: new Date(new Date().getTime() + 50000 * 1000),
+                    httpOnly: true
+                }
+            )
+            .json({
+                status: 200,
+                message: 'cookie being initialised'
+            });
         });
     }    
     catch (err) {
@@ -182,8 +193,25 @@ const logoutUser = async (req, res) => {
         
         const statusInsertedToken = result.token_inserted
         
-        statusInsertedToken == 1 ? res.status(200).send({status: 200, message: "Logout successful, token inserted"}) : res.status(200).send({status: 200, message: "Logout successful, token already exist in db"});
-            
+        if(statusInsertedToken == 1) {
+            res.status(200).clearCookie('objInfo', {
+                path: '/', 
+                sameSite: 'strict', 
+                secure: false, 
+                httpOnly: true 
+              }).
+              json({status: 200, message: "Logout successful, token inserted"})
+        } 
+        else{
+            res.status(200).clearCookie('objInfo', {
+                path: '/', 
+                sameSite: 'strict', 
+                secure: false, 
+                httpOnly: true 
+              }).
+              json({status: 200, message: "Logout successful, token already exist in db"});
+        } 
+         
     }
     catch (err) {
         console.error(err);
@@ -192,11 +220,22 @@ const logoutUser = async (req, res) => {
     
 }
 
+const cookieDetect = async (req, res) => {
+    const cookie = req.cookies.objInfo;
+
+    if(cookie){
+        res.status(200).json({message: 'Cookie exist', value: cookie});
+    } else {
+        res.status(404).json({message: 'Cookie dont exist'});
+    }
+}
+
 module.exports = {
     registerUser,
     loginUser,
     logoutUser,
     midleWareVerifyToken,
     createTypeUser,
-    statusVerifyToken
+    statusVerifyToken,
+    cookieDetect
 }

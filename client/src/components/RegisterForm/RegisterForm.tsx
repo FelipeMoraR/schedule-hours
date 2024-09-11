@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useState } from 'react';
 import styles from './RegisterForm.module.css';
-import formatClass from '../../utils/formatClass';
+import formatClass from '../../utils/FormatClass';
 import { IRegisterForm } from '../../interfaces/props';
 import InputField from '../InputField/InputField';
 import Button from '../Button/Button';

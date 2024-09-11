@@ -1,5 +1,5 @@
 import { IInputFieldProps } from '../../interfaces/props'
-import formatClass from '../../utils/formatClass';
+import formatClass from '../../utils/FormatClass';
 import styles from './InputField.module.css';
 
 function InputField({label, type, name, required, placeholder, value, defaultValue, maxLength, minLength, hidden, max, min, classes, onChange } : IInputFieldProps) {
