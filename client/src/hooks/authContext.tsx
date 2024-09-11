@@ -112,6 +112,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
 
     const logout = async () => {
         const statusLogout = await handleLogOut();
+        
         if(!statusLogout){
             console.error('Something went wrong in the logout');
             return

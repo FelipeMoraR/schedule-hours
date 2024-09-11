@@ -182,7 +182,7 @@ const logoutUser = async (req, res) => {
 
         const token = authToken.split(' ')[1]; //This ensures we are only using the token  
 
-        const [result] = await db.sequelize.query('CALL InsertToken(:token);', 
+        const result = await db.sequelize.query('CALL InsertToken(:token);', 
                 {
                     replacements: {
                         token: token
