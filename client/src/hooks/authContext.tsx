@@ -2,6 +2,7 @@ import { createContext, useContext, ReactNode, useState, useEffect } from 'react
 import { IAuthContextType } from '../interfaces/props';
 import verifyCookie from '../utils/VerifyCookie';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { regexOnlyNumberLetters, maxLengthInput, minLengthInput } from '../utils/InputValidator';
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
@@ -60,6 +61,7 @@ const fetchLoginUser = async (url: string, bodyReq: string) => {
 
 const AuthProvider = ({children}: {children: ReactNode}) => {
     const [isLogedContext, setIsLoged] = useState<boolean>(false);
+    const [errorLoged, setLogedError] = useState<string>('');
     const navigate = useNavigate();
     const location = useLocation();
     const from = location.state?.from?.pathname || '/';
@@ -88,6 +90,37 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const login = async (username: string, password: string) => {
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
         const url = apiUrl + '/auth/api/login-user';
+        const formatUsernameIsValid = regexOnlyNumberLetters(username);
+        const maxLengthUsernameIsValid = maxLengthInput(username, 10);
+        const maxLengthPasswordIsValid = maxLengthInput(password, 9);
+        const minLengthUsernameIsValid = minLengthInput(username, 4);
+        const minLengthPasswordIsValid = minLengthInput(password, 9);
+
+        if(!formatUsernameIsValid){
+            setLogedError('Username inserted is not valid, special characters or spaces cannot be used');
+            return
+        }
+
+        if(!maxLengthUsernameIsValid){
+            setLogedError('Username inserted is too long');
+            return
+        }
+
+        if(!maxLengthPasswordIsValid){
+            setLogedError('Password inserted is too long');
+            return
+        }
+
+        if(!minLengthUsernameIsValid){
+            setLogedError('Username inserted is too short');
+            return
+        }
+
+        if(!minLengthPasswordIsValid){
+            setLogedError('Password inserted is too short');
+            return
+        }
+
         const bodyReq = JSON.stringify({
             username: username,
             password: password
@@ -97,6 +130,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
             const responseLogin = await fetchLoginUser(url, bodyReq);   
             if(responseLogin.status !== 200){
                 setIsLoged(false);
+                setLogedError(responseLogin.message);
                 return
             }    
             
@@ -122,6 +156,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
 
     const value = {
         isLogedContext,
+        errorLoged,
         login,
         logout
     };
@@ -142,6 +177,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
             }
         }
         
+        setLogedError('');
         checkTokenLoged();
     }, []);
     

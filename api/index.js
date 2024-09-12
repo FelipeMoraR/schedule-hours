@@ -25,6 +25,8 @@ app.use(
   `/auth/api`, router
 );
 
+
+//Middleware to controll not found routes, that is all 400
 app.use('/auth/api/*', (req, res) => {
   res.status(404).json({ error: 'API route not found' });
 });

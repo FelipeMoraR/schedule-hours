@@ -5,11 +5,13 @@ import React, { ChangeEvent, useState } from 'react';
 import { useModal } from '../../utils/UseModal';
 import { useAuthContext } from '../../hooks/authContext';
 
+
 function LoginForm ()  {
+    
+    const { showModal, closeModal, isModalOpen } = useModal();
+    const { login, errorLoged } = useAuthContext();
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
-    const { showModal, closeModal, isModalOpen } = useModal();
-    const { login } = useAuthContext();
 
     const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -46,7 +48,15 @@ function LoginForm ()  {
                 classes = {['modal-loader-grey']}
                 onClose={closeModal}
             />
-    
+            
+            {
+                errorLoged !== '' ? (
+                    <div>
+                        {errorLoged}
+                    </div>
+                ) : null
+            }
+            
             <form onSubmit={handleSubmit}>
                 <InputField
                     label = 'Nombre Usuario'
@@ -54,6 +64,7 @@ function LoginForm ()  {
                     type = 'text'
                     required = {true}
                     value = {username}
+                    maxLength={10}
                     placeholder = 'Ingrese nombre'
                     classes = {['clase1', 'clase2']}
                     onChange = {handleOnChange}
@@ -65,6 +76,7 @@ function LoginForm ()  {
                     type = 'password'
                     required = {true}
                     value = {password}
+                    maxLength={9}
                     placeholder = 'Ingrese contraseña'
                     classes = {['claseP1', 'claseP2']}
                     onChange = {handleOnChange}

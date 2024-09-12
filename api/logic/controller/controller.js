@@ -23,18 +23,18 @@ const createTypeUser = async(req, res) => {
             return res.status(404).send({ status: 404, message: 'An error happend'});
         }
 
-        res.status(200).send({ status: 200, message: result});
+        return res.status(200).send({ status: 200, message: result});
     }
 
     catch (err){
         console.error(err);
-        res.status(500).json({ status: 500, error: 'Something went wrong'})
+        return res.status(500).json({ status: 500, error: 'Something went wrong'})
     }
 }
 
 
 const statusVerifyToken = async(req, res) => {
-    res.send({ status: 200, message: req.info});
+    return res.send({ status: 200, message: req.info});
 }
 
 const midleWareVerifyToken = async (req, res, next) => {
@@ -70,7 +70,7 @@ const midleWareVerifyToken = async (req, res, next) => {
     }
     catch (err) {
         console.error(err);
-        res.status(500).json({ status: 500, error: 'Something went wrong'})
+        return res.status(500).json({ status: 500, error: 'Something went wrong'})
     }
     
 }
@@ -106,20 +106,24 @@ const registerUser = async (req, res) => {
 
         const user_created = result.user_created;
 
-        user_created === 1 ? res.status(201).json({ status: 201, message: 'User created!'}) : res.status(409).json({ status: 409, message: 'User already exist!'});
+        if (user_created === 1){
+            return res.status(201).json({ status: 201, message: 'User created!'});
+        } else {
+            return res.status(409).json({ status: 409, message: 'User already exist!'});
+        }
 
         
     }
     
     catch (err) {
         console.error(err);
-        res.status(500).json({ status: 500, error: 'Something went wrong'})
+        return res.status(500).json({ status: 500, error: 'Something went wrong'})
     }
     
 
 }
 
-const loginUser = async (req, res) => {
+const loginUser = async (req, res) => {   
     try{
         const { username, 
             password, 
@@ -133,14 +137,13 @@ const loginUser = async (req, res) => {
                 type: db.Sequelize.QueryTypes.RAW
             }
         );
-
         if (!result) return res.status(404).json({status: 404, message: "User doesnt exist"});
         
         const resPassword = result.password;
         const resId = result.id_user;
 
         bcrypt.compare(password, resPassword, (err, isMatch) => {
-            if (err) throw err; 
+            if (err) return res.status(500).json({ status: 500, message: "Internal server error" });
             if(!isMatch) return res.status(401).json({status: 401, message: "Password incorrect"});  
 
             const objToken = { 
@@ -152,7 +155,7 @@ const loginUser = async (req, res) => {
                 expiresIn: 1800 // 30 min in seconds
             });
             
-            res.status(200).cookie('objInfo', token, { //This look like encoded because the const objInfo is a special character to prevent errors, first thing objinfo is transformered to a string with json.stringify()
+            return res.status(200).cookie('objInfo', token, { //This look like encoded because the const objInfo is a special character to prevent errors, first thing objinfo is transformered to a string with json.stringify()
                     sameSite: 'strict', // if you declare it like none this in local wont work
                     secure: false,
                     path: '/',
@@ -168,7 +171,7 @@ const loginUser = async (req, res) => {
     }    
     catch (err) {
         console.error(err);
-        res.status(500).json({ status: 500, error: 'Something went wrong'})
+        return res.status(500).json({ status: 500, error: 'Something went wrong'})
     }
 }
 
@@ -194,7 +197,7 @@ const logoutUser = async (req, res) => {
         const statusInsertedToken = result.token_inserted
         
         if(statusInsertedToken == 1) {
-            res.status(200).clearCookie('objInfo', {
+            return res.status(200).clearCookie('objInfo', {
                 path: '/', 
                 sameSite: 'strict', 
                 secure: false, 
@@ -203,7 +206,7 @@ const logoutUser = async (req, res) => {
               json({status: 200, message: "Logout successful, token inserted"})
         } 
         else{
-            res.status(200).clearCookie('objInfo', {
+            return res.status(200).clearCookie('objInfo', {
                 path: '/', 
                 sameSite: 'strict', 
                 secure: false, 
@@ -215,7 +218,7 @@ const logoutUser = async (req, res) => {
     }
     catch (err) {
         console.error(err);
-        res.status(500).json({ status: 500, error: 'Something went wrong'})
+        return res.status(500).json({ status: 500, error: 'Something went wrong'})
     }
     
 }
@@ -224,9 +227,9 @@ const cookieDetect = async (req, res) => {
     const cookie = req.cookies.objInfo;
 
     if(cookie){
-        res.status(200).json({message: 'Cookie exist', value: cookie});
+        return res.status(200).json({message: 'Cookie exist', value: cookie});
     } else {
-        res.status(404).json({message: 'Cookie dont exist'});
+        return res.status(404).json({message: 'Cookie dont exist'});
     }
 }
 

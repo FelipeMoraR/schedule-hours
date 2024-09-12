@@ -15,15 +15,16 @@ const verifyCookie = async () => {
         });
 
         const result = await response.json();
-
+        
         if (response.status !== 200){
+            console.error('Cookie doest exist');
             return false
         }
 
         return result.value
     } 
     catch(err: any) {
-        console.error('doy', err);
+        console.error('Error =>', err);
         return false
     }
 }

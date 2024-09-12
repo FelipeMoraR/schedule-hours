@@ -2,6 +2,7 @@ import React from "react";
 
 export interface IAuthContextType {
     isLogedContext: boolean;
+    errorLoged: string;
     login: (username: string, password:string) => void;
     logout: () => void;
 }
