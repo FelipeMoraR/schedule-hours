@@ -2,7 +2,7 @@ import { createContext, useContext, ReactNode, useState, useEffect } from 'react
 import { IAuthContextType } from '../interfaces/props';
 import verifyCookie from '../utils/VerifyCookie';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { regexOnlyNumberLetters, maxLengthInput, minLengthInput } from '../utils/InputValidator';
+import { validateOnlyNumberLetters, validateMaxLengthInput, validateMinLengthInput } from '../utils/InputValidator.tsx';
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
@@ -90,11 +90,13 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const login = async (username: string, password: string) => {
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
         const url = apiUrl + '/auth/api/login-user';
-        const formatUsernameIsValid = regexOnlyNumberLetters(username);
-        const maxLengthUsernameIsValid = maxLengthInput(username, 10);
-        const maxLengthPasswordIsValid = maxLengthInput(password, 9);
-        const minLengthUsernameIsValid = minLengthInput(username, 4);
-        const minLengthPasswordIsValid = minLengthInput(password, 9);
+
+        const formatUsernameIsValid = validateOnlyNumberLetters(username);
+        const maxLengthUsernameIsValid = validateMaxLengthInput(username, 10);
+        const minLengthUsernameIsValid = validateMinLengthInput(username, 4);
+
+        const maxLengthPasswordIsValid = validateMaxLengthInput(password, 9);
+        const minLengthPasswordIsValid = validateMinLengthInput(password, 9);
 
         if(!formatUsernameIsValid){
             setLogedError('Username inserted is not valid, special characters or spaces cannot be used');

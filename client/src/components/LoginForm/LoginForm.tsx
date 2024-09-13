@@ -59,6 +59,7 @@ function LoginForm ()  {
             
             <form onSubmit={handleSubmit}>
                 <InputField
+                    id = 'username'
                     label = 'Nombre Usuario'
                     name = 'username'
                     type = 'text'
@@ -71,6 +72,7 @@ function LoginForm ()  {
                 />
 
                 <InputField
+                    id = 'password'
                     label = 'Contraseña'
                     name = 'password'
                     type = 'password'

@@ -30,6 +30,7 @@ export interface IButton{
 }
 
 export interface IInputFieldProps {
+    id: string;
     label: string;
     type: string;
     name: string;

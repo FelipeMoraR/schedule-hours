@@ -2,13 +2,14 @@ import { IInputFieldProps } from '../../interfaces/props'
 import formatClass from '../../utils/FormatClass';
 import styles from './InputField.module.css';
 
-function InputField({label, type, name, required, placeholder, value, defaultValue, maxLength, minLength, hidden, max, min, classes, onChange } : IInputFieldProps) {
+function InputField({id, label, type, name, required, placeholder, value, defaultValue, maxLength, minLength, hidden, max, min, classes, onChange } : IInputFieldProps) {
     const { formatClasses } = formatClass(styles, classes);
 
     return(
         <div className = {formatClasses}>
             <label> {label} </label>
             <input 
+                id = {id}
                 type = {type}
                 name = {name}
                 value = {value}
