@@ -13,7 +13,35 @@ import { validateOnlyNumberLetters,
     validateRut,
     identifyInputError,
     extractComponentRut } from '../../utils/InputValidator.tsx';
+import { useModal } from '../../utils/UseModal.ts';
+import Modal from '../Modal/Modal.tsx';
+import { IErrorResponse } from '../../interfaces/props';
 
+
+const fetchRegisterUser = async (bodyReq: string) => {
+    const apiUrl = import.meta.env.VITE_BACKEND_URL;
+    const urlRegisterUser = apiUrl + '/auth/api/register-user';
+    
+    try{
+        const response = await fetch(urlRegisterUser, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: bodyReq
+        })
+
+        const data = await response.json();
+
+        
+        return data
+    } 
+    catch(err){
+        console.error('Something went wrong: ', err);
+        return {status: 500, message: 'internal server error'}
+    }
+    
+}
 
 function RegisterForm({ classes }: IRegisterForm) {
     const [fName, setFname] = useState<string>('');
@@ -25,7 +53,11 @@ function RegisterForm({ classes }: IRegisterForm) {
     const [errorForm, setErrorForm] = useState<Array<string>>([]);
     const { formatClasses } = formatClass(styles, classes);
     const { addIdError, removeIdError, emptyIdError, hasError } = identifyInputError();
-    
+    const {showModal, closeModal, isModalOpen} = useModal();
+    const [errorResponse, setErrorResponse ] = useState<IErrorResponse>({
+        status: 0,
+        message: ''
+    });
 
     const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => { //We have to thing in a better way to do this.
         const { name, value } = event.target;
@@ -51,12 +83,14 @@ function RegisterForm({ classes }: IRegisterForm) {
         }
     }
 
-    const handleSubmitRegister = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmitRegister = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const { fName, lastname, age, rut, username, password } = event.target as HTMLFormElement;
 
         const errors: string[] = [];
         const addError = (error: string) => errors.push(error);
+
+        showModal('loadingRegister');
 
         if(!validateOnlyLetters(fName.value)){
             addError('Solo se admiten letras en el primer nombre');
@@ -154,14 +188,16 @@ function RegisterForm({ classes }: IRegisterForm) {
         
         if(errors.length > 0) {
             setErrorForm(errors);
+            closeModal();
             return
         }
 
         emptyIdError();
+        setErrorForm([]);
 
         const { run, dv } = extractComponentRut(rut.value);
 
-        const objBodyRegister = {
+        const objBodyRegister = JSON.stringify({
             "username": username.value,
             "password": password.value,
             "first_name": fName.value,
@@ -170,104 +206,137 @@ function RegisterForm({ classes }: IRegisterForm) {
             "run_dv": dv,
             "age": age.value,
             "id_type_user": 2
-        }
-        console.log(objBodyRegister);
+        })
+
+        const responseRegister = await fetchRegisterUser(objBodyRegister);
+
+        closeModal() //Closing the loading modal;
+
+        setErrorResponse({
+            status: responseRegister.status,
+            message: responseRegister.message
+        });
+
+        showModal('responseRegisterModal')
+            
     }
 
     return (
-        <form className = {formatClasses} onSubmit={handleSubmitRegister}>
-            {
-                errorForm.length !== 0 ? (
-                    <div className='error'>
-                        {errorForm.map((error, index) => (
-                            <p key={index}>{error}</p>
-                        ))}
-                    </div>
-                ) : null
-            }
-
-            <InputField
-                id = 'fName'
-                label = 'Inserte primer nombre'
-                type = 'text'
-                name = 'fName'
-                required = {true}
-                value={fName}
-                maxLength={20}
-                classes={hasError('fName') ? ['error-class'] : ['normal-class']} 
-                onChange={handleOnChange}
-            />
-            
-
-            <InputField
-                id = 'lastname'
-                label = 'Inserte apellido paterno'
-                type = 'text'
-                name = 'lastname'
-                required = {true}
-                maxLength={20}
-                value={lastname}
-                classes={hasError('lastname') ? ['error-class'] : ['normal-class']} 
-                onChange={handleOnChange}
+        <>
+            <Modal
+                id = 'loadingRegister'
+                type = 'loading'
+                title = 'Loading...'
+                isOpen = {isModalOpen('loadingRegister')}
+                classes = {['modal-infomative-grey']}
+                onClose = {closeModal}
             />
 
-            <InputField
-                id = 'age'
-                label = 'Inserte su edad'
-                type = 'text'
-                name = 'age'
-                required = {true}
-                value={age}
-                maxLength={3}
-                classes={hasError('age') ? ['error-class'] : ['normal-class']} 
-                onChange={handleOnChange}
+            <Modal
+                id = 'responseRegisterModal'
+                type = 'informative'
+                title = {errorResponse.status !== 201 ? 'Error al crear el usuario' : 'Usuario creado correctamente'}
+                paragraph= {errorResponse.message}
+                isOpen = {isModalOpen('responseRegisterModal')}
+                classes = {['modal-infomative-grey']}
+                onClose = {closeModal}
             />
 
-            <InputField
-                id = 'rut'
-                label = 'Inserte su rut'
-                type = 'text'
-                placeholder='123456789'
-                name = 'rut'
-                required = {true}
-                maxLength={9}
-                value={rut}
-                classes={hasError('rut') ? ['error-class'] : ['normal-class']} 
-                onChange={handleOnChange}
-            />
+            <form className = {formatClasses} onSubmit={handleSubmitRegister}>
+                {
+                    errorForm.length !== 0 ? (
+                        <div className='error'>
+                            {errorForm.map((error, index) => (
+                                <p key={index}>{error}</p>
+                            ))}
+                        </div>
+                    ) : null
+                }
 
-            <InputField
-                id='username'
-                label = 'Inserte su nombre de usuario'
-                type = 'text'
-                name = 'username'
-                required = {true}
-                value={username}
-                maxLength={10}
-                classes={hasError('username') ? ['error-class'] : ['normal-class']} 
-                onChange={handleOnChange}
-            />
-
-            <InputField
-                id='password'
-                label = 'Inserte su contraseña'
-                type = 'password'
-                name = 'password'
-                required = {true}
-                value={passwrod}
-                maxLength={9}
-                classes={hasError('password') ? ['error-class'] : ['normal-class']} 
-                onChange={handleOnChange}
-            />
-
-            <Button
-                    id = 'btnRegister'
-                    text = 'Registrarse'
-                    type = 'submit'
-                    classes = {['backgorund-color-blue-violet', 'color-white']}
+                <InputField
+                    id = 'fName'
+                    label = 'Inserte primer nombre'
+                    type = 'text'
+                    name = 'fName'
+                    required = {true}
+                    value={fName}
+                    maxLength={20}
+                    classes={hasError('fName') ? ['error-class'] : ['normal-class']} 
+                    onChange={handleOnChange}
                 />
-        </form>
+                
+
+                <InputField
+                    id = 'lastname'
+                    label = 'Inserte apellido paterno'
+                    type = 'text'
+                    name = 'lastname'
+                    required = {true}
+                    maxLength={20}
+                    value={lastname}
+                    classes={hasError('lastname') ? ['error-class'] : ['normal-class']} 
+                    onChange={handleOnChange}
+                />
+
+                <InputField
+                    id = 'age'
+                    label = 'Inserte su edad'
+                    type = 'text'
+                    name = 'age'
+                    required = {true}
+                    value={age}
+                    maxLength={3}
+                    classes={hasError('age') ? ['error-class'] : ['normal-class']} 
+                    onChange={handleOnChange}
+                />
+
+                <InputField
+                    id = 'rut'
+                    label = 'Inserte su rut'
+                    type = 'text'
+                    placeholder='123456789'
+                    name = 'rut'
+                    required = {true}
+                    maxLength={9}
+                    value={rut}
+                    classes={hasError('rut') ? ['error-class'] : ['normal-class']} 
+                    onChange={handleOnChange}
+                />
+
+                <InputField
+                    id='username'
+                    label = 'Inserte su nombre de usuario'
+                    type = 'text'
+                    name = 'username'
+                    required = {true}
+                    value={username}
+                    maxLength={10}
+                    classes={hasError('username') ? ['error-class'] : ['normal-class']} 
+                    onChange={handleOnChange}
+                />
+
+                <InputField
+                    id='password'
+                    label = 'Inserte su contraseña'
+                    type = 'password'
+                    name = 'password'
+                    required = {true}
+                    value={passwrod}
+                    maxLength={9}
+                    classes={hasError('password') ? ['error-class'] : ['normal-class']} 
+                    onChange={handleOnChange}
+                />
+
+                <Button
+                        id = 'btnRegister'
+                        text = 'Registrarse'
+                        type = 'submit'
+                        classes = {['backgorund-color-blue-violet', 'color-white']}
+                    />
+            </form>
+        </>
     )
+    
 }
 
 export default RegisterForm;

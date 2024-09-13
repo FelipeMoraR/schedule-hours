@@ -59,3 +59,8 @@ export interface IModal {
     onClose: () => void;
     classes: Array<string>;
 }
+
+export interface IErrorResponse {
+    status: number;
+    message: string;
+}
