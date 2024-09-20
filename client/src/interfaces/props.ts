@@ -1,13 +1,19 @@
 import React from "react";
 
 export interface IAuthContextType {
-    isLogedContext: boolean;
     errorLoged: string;
+    isLoadingLogin: boolean;
+    isAuthenticated: boolean;
+    isLoadingLogout: boolean;
+    isLoadingVerifyCookie: boolean;
     login: (username: string, password:string) => void;
     logout: () => void;
+    changeAuthenticationFalse: () => void;
 }
 
-
+export interface IPublicRouteProps {
+    element: React.ReactElement;
+}
 
 export interface IPrivateRouteProps {
     element: React.ReactElement;

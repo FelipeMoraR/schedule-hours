@@ -3,9 +3,36 @@ import { IAuthContextType } from '../interfaces/props';
 import verifyCookie from '../utils/VerifyCookie';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { validateOnlyNumberLetters, validateMaxLengthInput, validateMinLengthInput } from '../utils/InputValidator.tsx';
+import removeCookie from '../utils/RemoveCookie.ts';
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
+const fetchVerifyToken = async (token: string, url: string) => {
+    try{
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const data = await response.json(); // Here extract the body of the response
+        
+        
+        if (data.status !== 200){
+            console.error('Error in the response');
+            return false
+        }
+        
+        return true
+    }
+    catch(err: any){
+        console.error(err);
+        return false
+    }
+}
 
 const fetchLogoutUser = async (token:string, url: string) => {
     try{
@@ -60,12 +87,60 @@ const fetchLoginUser = async (url: string, bodyReq: string) => {
 }
 
 const AuthProvider = ({children}: {children: ReactNode}) => {
-    const [isLogedContext, setIsLoged] = useState<boolean>(false);
     const [errorLoged, setLogedError] = useState<string>('');
+    const [isLoadingLogin, setIsLoadingLogin] = useState<boolean>(false);
+    const [isLoadingLogout, setIsLoadingLogout] = useState<boolean>(false);
+    const [isLoadingVerifyCookie, setIsLoadingVerifyCookie] = useState<boolean>(false);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const navigate = useNavigate();
     const location = useLocation();
     const from = location.state?.from?.pathname || '/';
     
+    const changeAuthenticationFalse = () => {
+        setIsAuthenticated(false);
+    }
+
+    const verfyToken = async () => {
+        setIsLoadingVerifyCookie(true);
+        const apiUrl = import.meta.env.VITE_BACKEND_URL;
+        const url = apiUrl + '/auth/api/verify-token';
+        
+        if(!url.includes('/auth/api/verify-token')){
+            console.error('Bad url');
+            setIsLoadingVerifyCookie(false);
+            setIsAuthenticated(false);
+            return false
+        }
+
+        const token = await verifyCookie();
+       
+        if(!token){
+            console.error('Token not found');
+            setIsLoadingVerifyCookie(false);
+            setIsAuthenticated(false);
+            return false
+        }
+        
+
+        const isValid = await fetchVerifyToken(token, url);
+        
+        if(!isValid){
+            console.error('Invalid Token');
+            await removeCookie(); //This will remove the cookie when the token is not valid.
+            setIsAuthenticated(false);
+            setIsLoadingVerifyCookie(false);
+            
+            return false
+        }
+
+        
+        setIsAuthenticated(true);
+        setIsLoadingVerifyCookie(false);
+        return true
+
+       
+    }
+
     const handleLogOut = async () => {
         const token = await verifyCookie();
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
@@ -90,6 +165,8 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const login = async (username: string, password: string) => {
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
         const url = apiUrl + '/auth/api/login-user';
+        
+        setIsLoadingLogin(true);
 
         const formatUsernameIsValid = validateOnlyNumberLetters(username);
         const maxLengthUsernameIsValid = validateMaxLengthInput(username, 10);
@@ -100,26 +177,31 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
 
         if(!formatUsernameIsValid){
             setLogedError('Username inserted is not valid, special characters or spaces cannot be used');
+            setIsLoadingLogin(false); //When you change a hook too fast react dont considerate this change and just mantein the value.
             return
         }
 
         if(!maxLengthUsernameIsValid){
             setLogedError('Username inserted is too long');
+            setIsLoadingLogin(false);
             return
         }
 
         if(!maxLengthPasswordIsValid){
             setLogedError('Password inserted is too long');
+            setIsLoadingLogin(false);
             return
         }
 
         if(!minLengthUsernameIsValid){
             setLogedError('Username inserted is too short');
+            setIsLoadingLogin(false);
             return
         }
 
         if(!minLengthPasswordIsValid){
             setLogedError('Password inserted is too short');
+            setIsLoadingLogin(false);
             return
         }
 
@@ -130,58 +212,70 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
 
         try{
             const responseLogin = await fetchLoginUser(url, bodyReq);   
+            
             if(responseLogin.status !== 200){
-                setIsLoged(false);
+                setIsLoadingLogin(false);
+                setIsAuthenticated(false);
                 setLogedError(responseLogin.message);
                 return
             }    
-            
-            setIsLoged(true);
+
+            setLogedError('');
+            setIsLoadingLogin(false);
+            setIsAuthenticated(true);
             navigate(from, {replace: true});
             return
         }
         catch(err){
+            setIsLoadingLogin(false);
             console.error('There is an error' + err);
             return
         }
     }
 
     const logout = async () => {
+        setIsLoadingLogout(true);
         const statusLogout = await handleLogOut();
         
         if(!statusLogout){
+            setIsLoadingLogout(false);
             console.error('Something went wrong in the logout');
             return
         }
-        setIsLoged(false);
+
+        setIsLoadingLogout(false);
+        setIsAuthenticated(false);
     }
 
     const value = {
-        isLogedContext,
         errorLoged,
+        isLoadingLogin,
+        isLoadingLogout,
+        isLoadingVerifyCookie,
+        isAuthenticated,
         login,
-        logout
+        logout,
+        changeAuthenticationFalse
     };
-
+    
     useEffect(() => {
+        
         const checkTokenLoged = async () => {
             try{
-                const tokenExist = await verifyCookie();
-
-                if (tokenExist) {
-                    setIsLoged(true);
-                } else {
-                    setIsLoged(false);
-                }
+                await verfyToken();
+                
+                return
             }
             catch(err){
                 console.error('Something went wrong ' + err);
             }
         }
         
-        setLogedError('');
+        
         checkTokenLoged();
-    }, []);
+    }, [  ]);
+
+    
     
     return (
         <AuthContext.Provider value={value}>

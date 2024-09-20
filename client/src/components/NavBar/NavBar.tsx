@@ -1,5 +1,5 @@
 import Button from '../../components/Button/Button';
-import React, { useEffect } from "react";
+import React from "react";
 import handlerNavigationNavBar from '../../utils/HandlerNavigationNavBar';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../hooks/authContext';
@@ -8,23 +8,31 @@ import { useAuthContext } from '../../hooks/authContext';
 
 function NavBar() {
     const navigate = useNavigate();
-    const { isLogedContext, logout} = useAuthContext();
+    const { isAuthenticated, logout } = useAuthContext();
     
+
     const handleButton = (event: React.MouseEvent<HTMLButtonElement>) => {
         const { id } = event.target as HTMLButtonElement;
         handlerNavigationNavBar(id, navigate);
     }
 
-    useEffect(() => {
-        console.log(isLogedContext)
-    }, [isLogedContext]);
+
+
     return(
         <>
+
             <nav>
                 Este es el navbar
+                <Button
+                    id = 'goHome'
+                    text = 'HOME'
+                    type = 'button'
+                    classes = {['']}
+                    onClick = {handleButton}
+                />
 
                 {
-                    !isLogedContext ? (
+                    !isAuthenticated ? (
                         <>
                             <Button
                                 id = 'goLogin'
@@ -46,7 +54,7 @@ function NavBar() {
                 }
 
                 {
-                    isLogedContext ? (
+                    isAuthenticated ? (
                         <>
                             <Button
                                 id = 'logout'

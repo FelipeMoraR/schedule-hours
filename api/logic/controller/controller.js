@@ -152,14 +152,14 @@ const loginUser = async (req, res) => {
             }
 
             const token = jwt.sign(objToken, secret, {
-                expiresIn: 1800 // 30 min in seconds
+                expiresIn: 5 // 30 min in seconds
             });
             
             return res.status(200).cookie('objInfo', token, { //This look like encoded because the const objInfo is a special character to prevent errors, first thing objinfo is transformered to a string with json.stringify()
                     sameSite: 'strict', // if you declare it like none this in local wont work
                     secure: false,
                     path: '/',
-                    expires: new Date(new Date().getTime() + 50000 * 1000),
+                    expires: new Date(new Date().getTime() + 30 * 60 * 1000),
                     httpOnly: true
                 }
             )
@@ -223,6 +223,23 @@ const logoutUser = async (req, res) => {
     
 }
 
+const removeCookie = async (req, res) => {
+    const cookies = req.cookies.objInfo;
+
+    if(!cookies){
+        return res.status(400).json({status: 400, message: "Cookie does not exist"});
+
+    }
+
+    return res.status(200).clearCookie('objInfo', {
+        path: '/', 
+        sameSite: 'strict', 
+        secure: false, 
+        httpOnly: true 
+      }).
+      json({status: 200, message: "cookie removed"})
+}
+
 const cookieDetect = async (req, res) => {
     const cookie = req.cookies.objInfo;
 
@@ -240,5 +257,6 @@ module.exports = {
     midleWareVerifyToken,
     createTypeUser,
     statusVerifyToken,
-    cookieDetect
+    cookieDetect,
+    removeCookie
 }

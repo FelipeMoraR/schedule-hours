@@ -11,6 +11,9 @@ function handlerNavigationNavBar(id:string, navigate: (path: string) => void) {
         case 'goProfile':
             navigate('/profile-user');
             return
+        case 'goHome':
+            navigate('/');
+            return
         default:
             navigate('/');
             return

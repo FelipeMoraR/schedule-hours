@@ -7,9 +7,8 @@ import { useAuthContext } from '../../hooks/authContext';
 
 
 function LoginForm ()  {
-    
-    const { showModal, closeModal, isModalOpen } = useModal();
-    const { login, errorLoged } = useAuthContext();
+    const { closeModal } = useModal();
+    const { login, errorLoged, isLoadingLogin } = useAuthContext();
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
 
@@ -24,28 +23,25 @@ function LoginForm ()  {
     }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        showModal('loaderLogin');
         event.preventDefault();
         const { username, password } = event.target as HTMLFormElement; //This allow access to the form features
 
         try{
-            login(username.value, password.value);
+            await login(username.value, password.value);
         } 
         catch(err){
             console.error('There is an error: ' + err);
         }
-
-        closeModal();
     }
 
     return(
-        <>
+        <>              
             <Modal
                 id = 'loaderLogin'
                 type = 'loader'
-                title = 'Titulo loader'
-                isOpen = {isModalOpen('loaderLogin')}
-                classes = {['modal-loader-grey']}
+                title = 'LOADING LOGIN...'
+                isOpen = {isLoadingLogin}
+                classes = {['modal-infomative-grey']}
                 onClose={closeModal}
             />
             

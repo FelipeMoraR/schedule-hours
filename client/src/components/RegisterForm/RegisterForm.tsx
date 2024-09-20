@@ -225,7 +225,7 @@ function RegisterForm({ classes }: IRegisterForm) {
         <>
             <Modal
                 id = 'loadingRegister'
-                type = 'loading'
+                type = 'loader'
                 title = 'Loading...'
                 isOpen = {isModalOpen('loadingRegister')}
                 classes = {['modal-infomative-grey']}
