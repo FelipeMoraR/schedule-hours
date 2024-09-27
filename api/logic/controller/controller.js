@@ -33,24 +33,22 @@ const createTypeUser = async(req, res) => {
 }
 
 
-const statusVerifyToken = async(req, res) => {
-    return res.send({ status: 200, message: req.info});
+const cookieValidator = async(req, res) => {
+    return res.send({ status: 200, message: 'Token is valid'}); 
 }
 
 const midleWareVerifyToken = async (req, res, next) => {
     try{
-        const authToken = req.headers.authorization;
-
-        if(!authToken || !authToken.startsWith('Bearer ')){
-            return res.status(401).send({ status: 401, message: 'Authorization error'});
+        const authToken = req.cookies.token;
+        
+        if(!authToken){
+            return res.status(404).send({ status: 404, message: 'Token does not exist'});
         }
-
-        const token = authToken.split(' ')[1];
 
         const [resultSearchToken] = await db.sequelize.query('CALL SearchToken(:token);', 
                 {
                     replacements: {
-                        token: token
+                        token: authToken
                     },
                     type: db.Sequelize.QueryTypes.RAW
                 }
@@ -61,7 +59,7 @@ const midleWareVerifyToken = async (req, res, next) => {
         }
     
 
-        jwt.verify(token, secret, (err, decoded) => {
+        jwt.verify(authToken, secret, (err, decoded) => {
             if (err) return res.status(401).send({ status: 401, message: 'Unauthorizated'});
 
             req.info = decoded;
@@ -152,17 +150,33 @@ const loginUser = async (req, res) => {
             }
 
             const token = jwt.sign(objToken, secret, {
-                expiresIn: 5 // 30 min in seconds
+                expiresIn: 30 //This is in seconds
+            });
+
+            const objRefreshToken = {
+                id: resId,
+                username: username 
+            }
+
+            const refreshToken = jwt.sign(objRefreshToken, secret, {
+                expiresIn: '5m'
             });
             
-            return res.status(200).cookie('objInfo', token, { //This look like encoded because the const objInfo is a special character to prevent errors, first thing objinfo is transformered to a string with json.stringify()
+            return res.status(200).cookie('token', token, { //This look like encoded because the const token is a special character to prevent errors, first thing objinfo is transformered to a string with json.stringify()
                     sameSite: 'strict', // if you declare it like none this in local wont work
-                    secure: false,
+                    secure: false, //http secure
                     path: '/',
-                    expires: new Date(new Date().getTime() + 30 * 60 * 1000),
+                    expires: new Date(new Date().getTime() + 0.5 * 60 * 1000),
                     httpOnly: true
                 }
             )
+            .cookie('refreshToken', refreshToken, {
+                sameSite: 'strict', // if you declare it like none this in local wont work
+                secure: false,
+                path: '/',
+                expires: new Date(new Date().getTime() + 1 * 60 * 1000),
+                httpOnly: true
+            })
             .json({
                 status: 200,
                 message: 'cookie being initialised'
@@ -177,44 +191,129 @@ const loginUser = async (req, res) => {
 
 const logoutUser = async (req, res) => {
     try{
-        const authToken = req.headers.authorization;
-
-        if(!authToken || !authToken.startsWith('Bearer ')){
-            return res.status(401).send({status: 401, message: 'Authorization error'});
+        const authToken = req.cookies.token;
+        const refreshToken = req.cookies.refreshToken;
+        
+        if(!authToken && !refreshToken){
+            return res.status(404).send({status: 404, message: 'Token and RefreshToken does not exist'});
         }
 
-        const token = authToken.split(' ')[1]; //This ensures we are only using the token  
+        if(authToken && refreshToken) {
+            const [result] = await db.sequelize.query('CALL InsertToken(:token);', 
+                    {
+                        replacements: {
+                            token: authToken
+                        },
+                        type: db.Sequelize.QueryTypes.RAW
+                    }
+                );
+        
+            const statusInsertedToken = result.token_inserted
+        
+            const [resultRefreshToken] = await db.sequelize.query('CALL InsertToken(:token);', 
+                    {
+                        replacements: {
+                            token: refreshToken
+                        },
+                        type: db.Sequelize.QueryTypes.RAW
+                    }
+                );
+        
+            const statusInsertedRefreshToken = resultRefreshToken.token_inserted;
 
-        const [result] = await db.sequelize.query('CALL InsertToken(:token);', 
-                {
-                    replacements: {
-                        token: token
-                    },
-                    type: db.Sequelize.QueryTypes.RAW
-                }
-            );
+
+            if(statusInsertedToken == 1 || statusInsertedRefreshToken == 1) {
+                return res.status(200).clearCookie('token', {
+                    path: '/', 
+                    sameSite: 'strict', 
+                    secure: false, 
+                    httpOnly: true 
+                }).
+                clearCookie('refreshToken', {
+                    path: '/', 
+                    sameSite: 'strict', 
+                    secure: false, 
+                    httpOnly: true 
+                }).
+                json({status: 200, message: "Logout successful, token inserted"})
+                
+            } 
+            else {
+                res.status(200).clearCookie('token', {
+                    path: '/', 
+                    sameSite: 'strict', 
+                    secure: false, 
+                    httpOnly: true 
+                }).
+                clearCookie('refreshToken', {
+                    path: '/', 
+                    sameSite: 'strict', 
+                    secure: false, 
+                    httpOnly: true 
+                }).
+                json({status: 200, message: "Logout successful, token already exist in db"});
+                
+            }
+        } else if (authToken){
+            const [result] = await db.sequelize.query('CALL InsertToken(:token);', 
+                    {
+                        replacements: {
+                            token: authToken
+                        },
+                        type: db.Sequelize.QueryTypes.RAW
+                    }
+                );
         
-        const statusInsertedToken = result.token_inserted
+            const statusInsertedToken = result.token_inserted;
+
+            if(statusInsertedToken == 1 ) {
+                return res.status(200).clearCookie('token', {
+                    path: '/', 
+                    sameSite: 'strict', 
+                    secure: false, 
+                    httpOnly: true 
+                }).
+                json({status: 200, message: "Logout successful, token inserted"})
+            } else {
+                return res.status(200).clearCookie('token', {
+                    path: '/', 
+                    sameSite: 'strict', 
+                    secure: false, 
+                    httpOnly: true 
+                }).
+                json({status: 200, message: "Logout successful, token already exist"})
+            }
+        } else if (refreshToken){
+            const [resultRefreshToken] = await db.sequelize.query('CALL InsertToken(:token);', 
+                    {
+                        replacements: {
+                            token: refreshToken
+                        },
+                        type: db.Sequelize.QueryTypes.RAW
+                    }
+                );
         
-        if(statusInsertedToken == 1) {
-            return res.status(200).clearCookie('objInfo', {
-                path: '/', 
-                sameSite: 'strict', 
-                secure: false, 
-                httpOnly: true 
-              }).
-              json({status: 200, message: "Logout successful, token inserted"})
-        } 
-        else{
-            return res.status(200).clearCookie('objInfo', {
-                path: '/', 
-                sameSite: 'strict', 
-                secure: false, 
-                httpOnly: true 
-              }).
-              json({status: 200, message: "Logout successful, token already exist in db"});
-        } 
-         
+            const statusInsertedRefreshToken = resultRefreshToken.token_inserted;
+
+            if(statusInsertedRefreshToken == 1) {
+                return res.status(200).clearCookie('refreshToken', {
+                    path: '/', 
+                    sameSite: 'strict', 
+                    secure: false, 
+                    httpOnly: true 
+                }).
+                json({status: 200, message: "Logout successful, token inserted"})
+            } else {
+                return res.status(200).clearCookie('refreshToken', {
+                    path: '/', 
+                    sameSite: 'strict', 
+                    secure: false, 
+                    httpOnly: true 
+                }).
+                json({status: 200, message: "Logout successful, token already exist"})
+            }
+        }
+
     }
     catch (err) {
         console.error(err);
@@ -224,14 +323,13 @@ const logoutUser = async (req, res) => {
 }
 
 const removeCookie = async (req, res) => {
-    const cookies = req.cookies.objInfo;
+    const cookies = req.cookies.token;
 
     if(!cookies){
         return res.status(400).json({status: 400, message: "Cookie does not exist"});
-
     }
 
-    return res.status(200).clearCookie('objInfo', {
+    return res.status(200).clearCookie('token', {
         path: '/', 
         sameSite: 'strict', 
         secure: false, 
@@ -240,9 +338,75 @@ const removeCookie = async (req, res) => {
       json({status: 200, message: "cookie removed"})
 }
 
-const cookieDetect = async (req, res) => {
-    const cookie = req.cookies.objInfo;
+const insertTokenBlackList = async (req, res) => {
+    const {token} = req.body;
 
+    if(!token) return res.status(404).json({status: 404, message: 'Token do not exist'});
+
+    const [result] = await db.sequelize.query('CALL InsertToken(:token);',  //This is a raw query
+                {
+                    replacements: {
+                        token: token
+                    },
+                    type: db.Sequelize.QueryTypes.RAW
+                }
+            );
+        
+    const statusInsertedToken = result.token_inserted 
+
+    if(statusInsertedToken === 1) {
+        return res.status(200).json({status: 200, message: 'Token inserted'});
+    } else{
+        return res.status(302).json({status: 302, message: 'Token already exist'});
+    }
+   
+}
+
+const refreshToken = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        const authToken = req.cookies.token;
+    
+        if (!refreshToken || !authToken) {
+            return res.status(401).send({ status: 404, message: 'Refresh token does not exist' });
+        }
+    
+        const decodedAuthToken = jwt.verify(authToken, secret);
+        const currentTime = Math.floor(Date.now() / 1000); //Actual time in seconds
+    
+        const timeRemaining = decodedAuthToken.exp - currentTime;
+    
+        if (timeRemaining > 5) {
+            return res.status(200).send({ status: 200, message: 'Token is still valid, no refresh needed' });
+        }
+    
+            
+        jwt.verify(refreshToken, secret, (err, user) => {
+            if (err) return res.status(403).json({ status: 403, message: 'Error in the refresh token: ' + err });
+    
+                
+            const newToken = jwt.sign({ id: user.id, username: user.username }, secret, {
+                expiresIn: 30 
+            });
+            console.log('Token actualiado');
+            return res.status(200).cookie('token', newToken, {
+                sameSite: 'strict',
+                secure: false,
+                path: '/',
+                expires: new Date(Date.now() + 0.5 * 60 * 1000), 
+                httpOnly: true
+            }).json({ status: 200, message: 'Token updated' });
+        });
+
+    } catch (err){
+        console.error('Something went wrong, ' + err);
+        return res.status(500).json({status: 500, message: 'something went wrong updating token'});
+    }
+}
+
+const cookieDetect = async (req, res) => {
+    const cookie = req.cookies.token;
+    
     if(cookie){
         return res.status(200).json({message: 'Cookie exist', value: cookie});
     } else {
@@ -256,7 +420,9 @@ module.exports = {
     logoutUser,
     midleWareVerifyToken,
     createTypeUser,
-    statusVerifyToken,
+    cookieValidator,
     cookieDetect,
-    removeCookie
+    removeCookie,
+    refreshToken,
+    insertTokenBlackList
 }

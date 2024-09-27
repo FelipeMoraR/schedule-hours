@@ -1,28 +1,34 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { IAuthContextType } from '../interfaces/props';
-import verifyCookie from '../utils/VerifyCookie';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { validateOnlyNumberLetters, validateMaxLengthInput, validateMinLengthInput } from '../utils/InputValidator.tsx';
 import removeCookie from '../utils/RemoveCookie.ts';
+import fetchInsertTokenBlackList from '../utils/FetchInsertTokenBlackList.ts';
+import fetchRefreshToken from '../utils/FetchRefreshCookie.ts';
+import decodeJWT from '../utils/decodeJWT';
+
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
-const fetchVerifyToken = async (token: string, url: string) => {
+const fetchVerifyToken = async (url: string) => {
     try{
-        
         const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
+            },
+            credentials: 'include'
         });
         
         const data = await response.json(); // Here extract the body of the response
         
-        
+        if(data.status === 404){
+            console.error('Error in the response', data.message);
+            return null
+        }
+
         if (data.status !== 200){
-            console.error('Error in the response');
+            console.error('Error in the response', data.message);
             return false
         }
         
@@ -34,13 +40,12 @@ const fetchVerifyToken = async (token: string, url: string) => {
     }
 }
 
-const fetchLogoutUser = async (token:string, url: string) => {
+const fetchLogoutUser = async (url: string) => {
     try{
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
             },
             credentials: 'include'
         });
@@ -82,7 +87,7 @@ const fetchLoginUser = async (url: string, bodyReq: string) => {
     }
     catch(err: any){
         console.error(err);
-        return 500
+        return {status: 500, message: err}
     }
 }
 
@@ -96,44 +101,59 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const location = useLocation();
     const from = location.state?.from?.pathname || '/';
     
-    const changeAuthenticationFalse = () => {
-        setIsAuthenticated(false);
+
+    const handleExpTokenJWT = (token: string) =>{
+        const decodeToken = decodeJWT(token);
+        const currentDate = new Date();
+    
+        if(!decodeToken){
+            console.error('ERROR handleExpTokenJWT, Token does not exist');
+            return null
+        }
+    
+        const timeMs = new Date(decodeToken.exp * 1000); //Time in miliseconds
+        
+        if((timeMs.getTime() / 1000) - (currentDate.getTime() / 1000) < 5 && (timeMs.getTime() / 1000) - (currentDate.getTime() / 1000) > 0){ //This is in seconds
+            console.warn('WARNING handleExpTokenJWT, Token is about to die');
+            return false
+        } 
+
+        if(currentDate > timeMs){
+            console.error('ERROR handleExpTokenJWT, Token died');
+            return null
+        }
+        
+        return true
     }
 
     const verfyToken = async () => {
         setIsLoadingVerifyCookie(true);
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
-        const url = apiUrl + '/auth/api/verify-token';
+        const url = apiUrl + '/auth/api/verify-cookie';
         
-        if(!url.includes('/auth/api/verify-token')){
+        if(!url.includes('/auth/api/verify-cookie')){
             console.error('Bad url');
             setIsLoadingVerifyCookie(false);
             setIsAuthenticated(false);
             return false
         }
 
-        const token = await verifyCookie();
-       
-        if(!token){
-            console.error('Token not found');
-            setIsLoadingVerifyCookie(false);
-            setIsAuthenticated(false);
-            return false
-        }
+        const isValid = await fetchVerifyToken(url);
         
-
-        const isValid = await fetchVerifyToken(token, url);
-        
-        if(!isValid){
-            console.error('Invalid Token');
-            await removeCookie(); //This will remove the cookie when the token is not valid.
+        if(isValid === null){
             setIsAuthenticated(false);
             setIsLoadingVerifyCookie(false);
-            
             return false
         }
 
-        
+        if(isValid === false){
+            await removeCookie();
+            setIsAuthenticated(false);
+            setIsLoadingVerifyCookie(false);
+            return false
+        }
+
+        console.log('Token valid');
         setIsAuthenticated(true);
         setIsLoadingVerifyCookie(false);
         return true
@@ -142,17 +162,11 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     }
 
     const handleLogOut = async () => {
-        const token = await verifyCookie();
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
         const url = apiUrl + '/auth/api/logout-user';
     
-        if(!token){
-            console.error('userToken not found');
-            return false
-        }
-
-        const statusLogoutUser = await fetchLogoutUser(token, url);
-
+        const statusLogoutUser = await fetchLogoutUser(url);
+        
         if(statusLogoutUser === 200){
             navigate('/');
             return true
@@ -165,7 +179,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const login = async (username: string, password: string) => {
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
         const url = apiUrl + '/auth/api/login-user';
-        
+    
         setIsLoadingLogin(true);
 
         const formatUsernameIsValid = validateOnlyNumberLetters(username);
@@ -239,7 +253,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         
         if(!statusLogout){
             setIsLoadingLogout(false);
-            console.error('Something went wrong in the logout');
+            setIsAuthenticated(false);
             return
         }
 
@@ -254,29 +268,34 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         isLoadingVerifyCookie,
         isAuthenticated,
         login,
-        logout,
-        changeAuthenticationFalse
+        logout
     };
     
     useEffect(() => {
-        
         const checkTokenLoged = async () => {
             try{
-                await verfyToken();
-                
+                const statusToken = await verfyToken();
+
+                if(statusToken){
+                    console.warn('entra al if');
+                    await fetchRefreshToken();
+                    console.warn('pasó el fetch');
+                }
                 return
             }
             catch(err){
                 console.error('Something went wrong ' + err);
+                return
             }
         }
         
-        
         checkTokenLoged();
-    }, [  ]);
+    }, [location]);
 
-    
-    
+   
+
+
+
     return (
         <AuthContext.Provider value={value}>
             {children}

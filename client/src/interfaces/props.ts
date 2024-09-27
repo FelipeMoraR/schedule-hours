@@ -8,7 +8,6 @@ export interface IAuthContextType {
     isLoadingVerifyCookie: boolean;
     login: (username: string, password:string) => void;
     logout: () => void;
-    changeAuthenticationFalse: () => void;
 }
 
 export interface IPublicRouteProps {

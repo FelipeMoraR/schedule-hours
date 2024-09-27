@@ -1,7 +1,7 @@
 
 
 
-const verifyCookie = async () => {
+const verifyExtractTokenCookie = async () => {
     const apiUrl = import.meta.env.VITE_BACKEND_URL;
     const urlCookie = apiUrl + '/auth/api/cookie-protection';
 
@@ -29,4 +29,4 @@ const verifyCookie = async () => {
     }
 }
 
-export default verifyCookie;
+export default verifyExtractTokenCookie;
