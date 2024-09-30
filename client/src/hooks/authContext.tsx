@@ -3,9 +3,7 @@ import { IAuthContextType } from '../interfaces/props';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { validateOnlyNumberLetters, validateMaxLengthInput, validateMinLengthInput } from '../utils/InputValidator.tsx';
 import removeCookie from '../utils/RemoveCookie.ts';
-import fetchInsertTokenBlackList from '../utils/FetchInsertTokenBlackList.ts';
 import fetchRefreshToken from '../utils/FetchRefreshCookie.ts';
-import decodeJWT from '../utils/decodeJWT';
 
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
@@ -65,8 +63,11 @@ const fetchLogoutUser = async (url: string) => {
     }
 }
 
-const fetchLoginUser = async (url: string, bodyReq: string) => {
+const fetchLoginUser = async (bodyReq: string) => {
     try{
+        const apiUrl = import.meta.env.VITE_BACKEND_URL;
+        const url = apiUrl + '/auth/api/login-user';
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -101,31 +102,6 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const location = useLocation();
     const from = location.state?.from?.pathname || '/';
     
-
-    const handleExpTokenJWT = (token: string) =>{
-        const decodeToken = decodeJWT(token);
-        const currentDate = new Date();
-    
-        if(!decodeToken){
-            console.error('ERROR handleExpTokenJWT, Token does not exist');
-            return null
-        }
-    
-        const timeMs = new Date(decodeToken.exp * 1000); //Time in miliseconds
-        
-        if((timeMs.getTime() / 1000) - (currentDate.getTime() / 1000) < 5 && (timeMs.getTime() / 1000) - (currentDate.getTime() / 1000) > 0){ //This is in seconds
-            console.warn('WARNING handleExpTokenJWT, Token is about to die');
-            return false
-        } 
-
-        if(currentDate > timeMs){
-            console.error('ERROR handleExpTokenJWT, Token died');
-            return null
-        }
-        
-        return true
-    }
-
     const verfyToken = async () => {
         setIsLoadingVerifyCookie(true);
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
@@ -157,8 +133,6 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         setIsAuthenticated(true);
         setIsLoadingVerifyCookie(false);
         return true
-
-       
     }
 
     const handleLogOut = async () => {
@@ -177,9 +151,6 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     
 
     const login = async (username: string, password: string) => {
-        const apiUrl = import.meta.env.VITE_BACKEND_URL;
-        const url = apiUrl + '/auth/api/login-user';
-    
         setIsLoadingLogin(true);
 
         const formatUsernameIsValid = validateOnlyNumberLetters(username);
@@ -225,7 +196,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         });
 
         try{
-            const responseLogin = await fetchLoginUser(url, bodyReq);   
+            const responseLogin = await fetchLoginUser(bodyReq);   
             
             if(responseLogin.status !== 200){
                 setIsLoadingLogin(false);
@@ -249,14 +220,9 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
 
     const logout = async () => {
         setIsLoadingLogout(true);
-        const statusLogout = await handleLogOut();
+        await fetchRefreshToken(); //This prevents errors when the token expired and the refresh token still alive.
+        await handleLogOut();
         
-        if(!statusLogout){
-            setIsLoadingLogout(false);
-            setIsAuthenticated(false);
-            return
-        }
-
         setIsLoadingLogout(false);
         setIsAuthenticated(false);
     }
@@ -274,14 +240,24 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     useEffect(() => {
         const checkTokenLoged = async () => {
             try{
-                const statusToken = await verfyToken();
+                setIsLoadingVerifyCookie(true);
+                
+                await new Promise(resolve => setTimeout(resolve, 1500)); //To controll the petitions of the backend.
 
-                if(statusToken){
-                    console.warn('entra al if');
-                    await fetchRefreshToken();
-                    console.warn('pasó el fetch');
+                const statusRefreshToken = await fetchRefreshToken();
+                //With those if we control de petitions of the backend to optimized resources.
+                if(statusRefreshToken){
+                    setIsAuthenticated(true);
+                    setIsLoadingVerifyCookie(false);
+                } else {
+                    setIsLoadingVerifyCookie(false);
                 }
-                return
+                
+                
+                if(!statusRefreshToken && isAuthenticated){ 
+                    await verfyToken(); 
+                }
+                
             }
             catch(err){
                 console.error('Something went wrong ' + err);
