@@ -1,7 +1,7 @@
 import Button from '../../components/Button/Button';
 import React from "react";
 import handlerNavigationNavBar from '../../utils/HandlerNavigationNavBar';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../hooks/authContext';
 
 // Leer una cookie
@@ -9,25 +9,22 @@ import { useAuthContext } from '../../hooks/authContext';
 function NavBar() {
     const navigate = useNavigate();
     const { isAuthenticated, logout } = useAuthContext();
-    
+    const location = useLocation();
 
     const handleButton = (event: React.MouseEvent<HTMLButtonElement>) => {
         const { id } = event.target as HTMLButtonElement;
         handlerNavigationNavBar(id, navigate);
     }
 
-
-
     return(
         <>
-
             <nav>
                 Este es el navbar
                 <Button
-                    id = 'goHome'
+                    id = 'home'
                     text = 'HOME'
                     type = 'button'
-                    classes = {['']}
+                    classes = {location.pathname === '/' ? ['blocked'] : ['']}
                     onClick = {handleButton}
                 />
 
@@ -35,18 +32,18 @@ function NavBar() {
                     !isAuthenticated ? (
                         <>
                             <Button
-                                id = 'goLogin'
+                                id = 'loginUser'
                                 text = 'LOGIN'
                                 type = 'button'
-                                classes = {['']}
+                                classes = {location.pathname === '/login-user' ? ['blocked'] : ['']}
                                 onClick = {handleButton}
                             />
 
                             <Button
-                                id = 'goRegister'
+                                id = 'registerUser'
                                 text = 'Register'
                                 type = 'button'
-                                classes = {['']}
+                                classes = {location.pathname === '/register-user' ? ['blocked'] : ['']}
                                 onClick = {handleButton}
                             />  
                         </>
@@ -65,10 +62,10 @@ function NavBar() {
                             />
 
                             <Button 
-                                id = 'goProfile'
+                                id = 'profileUser'
                                 text = 'Profile'
                                 type = 'button'
-                                classes = {['']}
+                                classes = {location.pathname === '/profile-user' ? ['blocked'] : ['']}
                                 onClick = {handleButton}
                             /> 
                         </>

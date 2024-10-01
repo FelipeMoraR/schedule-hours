@@ -144,13 +144,13 @@ const registerUser = async (req, res) => {
         );
 
         const user_created = result.user_created;
+        const errors_register = result.error_register
 
         if (user_created === 1){
             return res.status(201).json({ status: 201, message: 'User created!'});
         } else {
-            return res.status(409).json({ status: 409, message: 'User already exist!'});
+            return res.status(409).json({ status: 409, message: errors_register});
         }
-
         
     }
     

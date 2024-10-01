@@ -242,7 +242,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
             try{
                 setIsLoadingVerifyCookie(true);
                 
-                await new Promise(resolve => setTimeout(resolve, 1500)); //To controll the petitions of the backend.
+                await new Promise(resolve => setTimeout(resolve, 500)); //To controll the petitions to the backend.
 
                 const statusRefreshToken = await fetchRefreshToken();
                 //With those if we control de petitions of the backend to optimized resources.
@@ -267,10 +267,6 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         
         checkTokenLoged();
     }, [location]);
-
-   
-
-
 
     return (
         <AuthContext.Provider value={value}>

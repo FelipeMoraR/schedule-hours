@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import styles from './RegisterForm.module.css';
 import formatClass from '../../utils/FormatClass';
 import { IRegisterForm } from '../../interfaces/props';
@@ -16,6 +16,7 @@ import { validateOnlyNumberLetters,
 import { useModal } from '../../utils/UseModal.ts';
 import Modal from '../Modal/Modal.tsx';
 import { IErrorResponse } from '../../interfaces/props';
+import { useNavigate } from 'react-router-dom';
 
 
 const fetchRegisterUser = async (bodyReq: string) => {
@@ -58,6 +59,7 @@ function RegisterForm({ classes }: IRegisterForm) {
         status: 0,
         message: ''
     });
+    const navigate = useNavigate();
 
     const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => { //We have to thing in a better way to do this.
         const { name, value } = event.target;
@@ -210,16 +212,27 @@ function RegisterForm({ classes }: IRegisterForm) {
 
         const responseRegister = await fetchRegisterUser(objBodyRegister);
 
-        closeModal() //Closing the loading modal;
+        closeModal(); //Closing the loading modal;
 
         setErrorResponse({
             status: responseRegister.status,
             message: responseRegister.message
         });
 
-        showModal('responseRegisterModal')
-            
+        showModal('responseRegisterModal');
     }
+
+    useEffect(() => {
+        const checkStatusResponse = async () => {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            if(errorResponse.status === 201){
+                navigate('/login-user');
+            }
+        }
+
+        checkStatusResponse();
+    }, [errorResponse])
 
     return (
         <>
@@ -236,7 +249,7 @@ function RegisterForm({ classes }: IRegisterForm) {
                 id = 'responseRegisterModal'
                 type = 'informative'
                 title = {errorResponse.status !== 201 ? 'Error al crear el usuario' : 'Usuario creado correctamente'}
-                paragraph= {errorResponse.message}
+                paragraph= {errorResponse.status !== 201 ? errorResponse.message : errorResponse.message + 'Redirecting...'}
                 isOpen = {isModalOpen('responseRegisterModal')}
                 classes = {['modal-infomative-grey']}
                 onClose = {closeModal}
