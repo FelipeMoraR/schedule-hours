@@ -6,6 +6,7 @@ export interface IAuthContextType {
     isAuthenticated: boolean;
     isLoadingLogout: boolean;
     isLoadingVerifyCookie: boolean;
+    userData: any;
     login: (username: string, password:string) => void;
     logout: () => void;
 }

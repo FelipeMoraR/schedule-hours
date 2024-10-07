@@ -92,12 +92,40 @@ const fetchLoginUser = async (bodyReq: string) => {
     }
 }
 
+const fetchGetUser = async () => {
+    const apiUrl = import.meta.env.VITE_BACKEND_URL;
+    const url = apiUrl + '/auth/api/get-user-info';
+
+    try{
+        const response = await fetch(url, {
+            method: 'GET', 
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+
+        });
+
+        const result = await response.json();
+        if (result.status === 200){
+            return result.data;
+        }
+        
+        return null 
+    } catch (err) {
+        console.error('Something went wrong ' + err);
+        return null
+    }
+}
+
 const AuthProvider = ({children}: {children: ReactNode}) => {
     const [errorLoged, setLogedError] = useState<string>('');
     const [isLoadingLogin, setIsLoadingLogin] = useState<boolean>(false);
     const [isLoadingLogout, setIsLoadingLogout] = useState<boolean>(false);
     const [isLoadingVerifyCookie, setIsLoadingVerifyCookie] = useState<boolean>(false);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [userData, setUserData] = useState<any>(null);
+
     const navigate = useNavigate();
     const location = useLocation();
     const from = location.state?.from?.pathname || '/';
@@ -142,6 +170,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         const statusLogoutUser = await fetchLogoutUser(url);
         
         if(statusLogoutUser === 200){
+            setUserData(null);
             navigate('/');
             return true
         }
@@ -233,6 +262,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         isLoadingLogout,
         isLoadingVerifyCookie,
         isAuthenticated,
+        userData,
         login,
         logout
     };
@@ -243,21 +273,18 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
                 setIsLoadingVerifyCookie(true);
                 
                 await new Promise(resolve => setTimeout(resolve, 500)); //To controll the petitions to the backend.
-
+                
                 const statusRefreshToken = await fetchRefreshToken();
                 //With those if we control de petitions of the backend to optimized resources.
                 if(statusRefreshToken){
-                    setIsAuthenticated(true);
-                    setIsLoadingVerifyCookie(false);
-                } else {
-                    setIsLoadingVerifyCookie(false);
-                }
-                
-                
+                    setIsAuthenticated(true);  
+                } 
+
                 if(!statusRefreshToken && isAuthenticated){ 
                     await verfyToken(); 
                 }
-                
+
+                setIsLoadingVerifyCookie(false);
             }
             catch(err){
                 console.error('Something went wrong ' + err);
@@ -267,6 +294,20 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         
         checkTokenLoged();
     }, [location]);
+
+    useEffect(() => {
+        const localGetUser = async () => {
+            if(isAuthenticated){
+                const dataUser = await fetchGetUser();
+                if(dataUser !== null){
+                    setUserData(dataUser);
+                }
+                    
+            }
+        }
+
+        localGetUser();
+    }, [isAuthenticated]);
 
     return (
         <AuthContext.Provider value={value}>

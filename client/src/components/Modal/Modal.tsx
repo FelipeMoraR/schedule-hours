@@ -14,36 +14,36 @@ function Modal ({id, type, title, paragraph, isOpen, classes, onClose}  : IModal
 
     return(
         <div className = {formatClasses} id = {id}>
-            <div onClick={onClose}>
-                x
-            </div>
+            { 
+                type === 'informative' ? (
+                    <>
+                        <div onClick={onClose}>
+                            x
+                        </div>
 
-            <div>
-                <div>
-                    {title}
-                </div>
+                        <div>
+                            {title}
+                        </div>
 
-                <div>
-                    { 
-                        type === 'informative' ? (
-                            <div>
-                                {paragraph}
-                            </div>
-                        ): type === 'loader' ? (
-                            <div>
-                                LOADING...
-                            </div>
-                        ) : null 
-                    }
-                </div>
-            </div>
-            
+                        <div>
+                            {paragraph}
+                        </div>
+                    </>
+                    
+                ): type === 'loader' ? (
+                    <>
+                        <div>
+                            {title}
+                        </div>
+
+                        <div>
+                            Here u have to put the loading animation.
+                        </div>
+                    </>
+                ) : null 
+            }
         </div>
     )
-
-    
-     
-
 }
 
 export default Modal;

@@ -110,7 +110,6 @@ const midleWareVerifyToken = async (req, res, next) => {
         console.error(err);
         return res.status(500).json({ status: 500, error: 'Something went wrong'})
     }
-    
 }
 
 //using it
@@ -335,6 +334,39 @@ const insertTokenBlackList = async (req, res) => {
    
 }
 
+const getUserData = async (req, res) => {
+    const userId = req.info.id;
+    
+    if(!userId) return res.status(404).json({status: 404, error: 'User not logged'});
+    
+    const [result] = await db.sequelize.query('CALL GetUser(:id_user)', 
+        {
+            replacements: {
+                id_user: userId
+            },
+            type: db.Sequelize.QueryTypes.RAW
+        }
+    );
+
+    const notFoundUser = result.user_status_select;
+
+    if(notFoundUser) return res.status(404).json({status: 404, error: 'User does not exist'});
+
+
+    return res.status(200).json({ status: 200, data: {
+        username: result.username,
+        first_name: result.first_name,
+        last_name: result.last_name,
+        second_last_name: result.second_last_name,
+        run: result.run,
+        run_dv: result.run_dv,
+        description: result.description,
+        profile_photo: result.profile_photo,
+        age: result.age,
+        id_type_user: result.id_type_user
+    }})
+}
+
 //using it
 const refreshToken = async (req, res) => {
     try {
@@ -421,5 +453,6 @@ module.exports = {
     cookieValidator,
     removeCookie,
     refreshToken,
-    insertTokenBlackList
+    insertTokenBlackList,
+    getUserData
 }

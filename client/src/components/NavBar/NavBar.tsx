@@ -8,7 +8,7 @@ import { useAuthContext } from '../../hooks/authContext';
 
 function NavBar() {
     const navigate = useNavigate();
-    const { isAuthenticated, logout } = useAuthContext();
+    const { isAuthenticated, logout, userData } = useAuthContext();
     const location = useLocation();
 
     const handleButton = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -68,6 +68,15 @@ function NavBar() {
                                 classes = {location.pathname === '/profile-user' ? ['blocked'] : ['']}
                                 onClick = {handleButton}
                             /> 
+
+                            {
+                                userData && userData.id_type_user === 2 ? (
+                                    <h1>estudiante</h1>
+                                ) : 
+                                (
+                                    <h1>Profe</h1>
+                                )
+                            }
                         </>
                     ) : null
                 }
