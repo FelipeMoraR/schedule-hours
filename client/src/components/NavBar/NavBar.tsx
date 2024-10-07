@@ -4,7 +4,6 @@ import handlerNavigationNavBar from '../../utils/HandlerNavigationNavBar';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../hooks/authContext';
 
-// Leer una cookie
 
 function NavBar() {
     const navigate = useNavigate();

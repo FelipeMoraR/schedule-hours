@@ -122,7 +122,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const [errorLoged, setLogedError] = useState<string>('');
     const [isLoadingLogin, setIsLoadingLogin] = useState<boolean>(false);
     const [isLoadingLogout, setIsLoadingLogout] = useState<boolean>(false);
-    const [isLoadingVerifyCookie, setIsLoadingVerifyCookie] = useState<boolean>(false);
+    const [isLoadingVerifyCookie, setIsLoadingVerifyCookie] = useState<boolean>(true);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [userData, setUserData] = useState<any>(null);
 
@@ -308,6 +308,13 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
 
         localGetUser();
     }, [isAuthenticated]);
+
+
+    if(isLoadingVerifyCookie) {
+        return(
+            <h1>Loading COOKIEEE....</h1>
+        )
+    }
 
     return (
         <AuthContext.Provider value={value}>
