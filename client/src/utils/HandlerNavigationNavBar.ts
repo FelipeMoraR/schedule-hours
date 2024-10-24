@@ -4,19 +4,22 @@ function handlerNavigationNavBar(id:string, navigate: (path: string) => void) {
     switch (id){
         case 'loginUser':
             navigate('/login-user');
-            return
+            return;
         case 'registerUser':
             navigate('/register-user');
-            return
+            return;
         case 'profileUser':
             navigate('/profile-user');
-            return
+            return;
         case 'home':
             navigate('/');
-            return
+            return;
+        case 'createClass':
+            navigate('/create-class');
+            return;
         default:
             navigate('/');
-            return
+            return;
     }
 }
 

@@ -191,7 +191,7 @@ const loginUser = async (req, res) => {
             }
 
             const token = jwt.sign(objToken, secret, {
-                expiresIn: 30 //This is in seconds
+                expiresIn: 900 //This is in seconds, 15 min
             });
 
             const objRefreshToken = {
@@ -200,7 +200,7 @@ const loginUser = async (req, res) => {
             }
 
             const refreshToken = jwt.sign(objRefreshToken, secret, {
-                expiresIn: '5m'
+                expiresIn: '7d'
             });
             
             const resultUpdateRefreshToken = await db.sequelize.query('CALL UpdateRefreshToken(:id_user, :refresh_token);',
@@ -216,14 +216,12 @@ const loginUser = async (req, res) => {
             if (!resultUpdateRefreshToken){
                 return res.status(404).json({status: 404, message: 'Refresh token did not updated'});
             }
-            
-            
 
             return res.status(200).cookie('token', token, { //This look like encoded because the const token is a special character to prevent errors, first thing objinfo is transformered to a string with json.stringify()
                     sameSite: 'strict', // if you declare it like none this in local wont work
                     secure: false, //http secure
                     path: '/',
-                    expires: new Date(new Date().getTime() + 0.5 * 60 * 1000),
+                    expires: new Date(new Date().getTime() + 15 * 60 * 1000),
                     httpOnly: true
                 }
             )
@@ -231,7 +229,7 @@ const loginUser = async (req, res) => {
                 sameSite: 'strict', // if you declare it like none this in local wont work
                 secure: false,
                 path: '/',
-                expires: new Date(new Date().getTime() + 5 * 60 * 1000),
+                expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
                 httpOnly: true
             })
             .json({
@@ -295,27 +293,35 @@ const logoutUser = async (req, res) => {
 
 //using it
 const removeCookie = async (req, res) => {
-    const cookies = req.cookies.token;
+    try{
+        const cookies = req.cookies.token;
 
-    if(!cookies){
-        return res.status(400).json({status: 400, message: "Cookie does not exist"});
+        if(!cookies){
+            return res.status(400).json({status: 400, message: "Cookie does not exist"});
+        }
+
+        return res.status(200).clearCookie('token', {
+            path: '/', 
+            sameSite: 'strict', 
+            secure: false, 
+            httpOnly: true 
+        }).
+        json({status: 200, message: "cookie removed"});
+        } 
+    catch (e){
+        console.log('Something went wrong', e);
+        return res.status(500).json({status: 500, message: 'Someting went wront' + e});
     }
-
-    return res.status(200).clearCookie('token', {
-        path: '/', 
-        sameSite: 'strict', 
-        secure: false, 
-        httpOnly: true 
-      }).
-      json({status: 200, message: "cookie removed"})
+    
 }
 
 const insertTokenBlackList = async (req, res) => {
-    const {token} = req.body;
+    try{
+        const {token} = req.body;
 
-    if(!token) return res.status(404).json({status: 404, message: 'Token do not exist'});
+        if(!token) return res.status(404).json({status: 404, message: 'Token do not exist'});
 
-    const [result] = await db.sequelize.query('CALL InsertTokenBlackList(:token);',  //This is a raw query
+        const [result] = await db.sequelize.query('CALL InsertTokenBlackList(:token);',  //This is a raw query
                 {
                     replacements: {
                         token: token
@@ -324,47 +330,58 @@ const insertTokenBlackList = async (req, res) => {
                 }
             );
         
-    const statusInsertedToken = result.token_inserted 
+        const statusInsertedToken = result.token_inserted 
 
-    if(statusInsertedToken === 1) {
-        return res.status(200).json({status: 200, message: 'Token inserted'});
-    } else{
-        return res.status(302).json({status: 302, message: 'Token already exist'});
+        if(statusInsertedToken === 1) {
+            return res.status(200).json({status: 200, message: 'Token inserted'});
+        } else{
+            return res.status(302).json({status: 302, message: 'Token already exist'});
+        }
     }
-   
+    catch (e){
+        console.log('Something went wrong', e);
+        return res.status(500).json({status: 500, message: 'Someting went wront' + e});
+    }
 }
 
 const getUserData = async (req, res) => {
-    const userId = req.info.id;
+    try{
+        const userId = req.info.id; //This is from the middleware
     
-    if(!userId) return res.status(404).json({status: 404, error: 'User not logged'});
+        if(!userId) return res.status(404).json({status: 404, error: 'User not logged'});
+        
+        const [result] = await db.sequelize.query('CALL GetUser(:id_user)', 
+            {
+                replacements: {
+                    id_user: userId
+                },
+                type: db.Sequelize.QueryTypes.RAW
+            }
+        );
     
-    const [result] = await db.sequelize.query('CALL GetUser(:id_user)', 
-        {
-            replacements: {
-                id_user: userId
-            },
-            type: db.Sequelize.QueryTypes.RAW
-        }
-    );
+        const notFoundUser = result.user_status_select;
+    
+        if(notFoundUser) return res.status(404).json({status: 404, error: 'User does not exist'});
+    
+        return res.status(200).json({ status: 200, data: {
+            id_user: userId,
+            username: result.username,
+            first_name: result.first_name,
+            last_name: result.last_name,
+            second_last_name: result.second_last_name,
+            run: result.run,
+            run_dv: result.run_dv,
+            description: result.description,
+            profile_photo: result.profile_photo,
+            age: result.age,
+            id_type_user: result.id_type_user
+        }});
+    }
 
-    const notFoundUser = result.user_status_select;
-
-    if(notFoundUser) return res.status(404).json({status: 404, error: 'User does not exist'});
-
-
-    return res.status(200).json({ status: 200, data: {
-        username: result.username,
-        first_name: result.first_name,
-        last_name: result.last_name,
-        second_last_name: result.second_last_name,
-        run: result.run,
-        run_dv: result.run_dv,
-        description: result.description,
-        profile_photo: result.profile_photo,
-        age: result.age,
-        id_type_user: result.id_type_user
-    }})
+    catch (e){ 
+        console.log('Something went wrong', e);
+        return res.status(500).json({status: 500, message: 'Someting went wront' + e});
+    }
 }
 
 //using it
@@ -399,13 +416,13 @@ const refreshToken = async (req, res) => {
 
 
         if(refreshToken && !authToken){ //we have to look at it 
-            const newToken = jwt.sign({ id: userRefreshToken.id, username: userRefreshToken.username }, secret, { expiresIn: 30 });
+            const newToken = jwt.sign({ id: userRefreshToken.id, username: userRefreshToken.username }, secret, { expiresIn: 900 });
 
             return res.status(200).cookie('token', newToken, {
                 sameSite: 'strict',
                 secure: false,
                 path: '/',
-                expires: new Date(Date.now() + 0.5 * 60 * 1000), 
+                expires: new Date(Date.now() + 15 * 60 * 1000), 
                 httpOnly: true
             }).json({ status: 200, message: 'Token updated' });
         }
@@ -426,14 +443,14 @@ const refreshToken = async (req, res) => {
     
                 
             const newToken = jwt.sign({ id: user.id, username: user.username }, secret, {
-                expiresIn: 30 
+                expiresIn: 900 
             });
             
             return res.status(200).cookie('token', newToken, {
                 sameSite: 'strict',
                 secure: false,
                 path: '/',
-                expires: new Date(Date.now() + 0.5 * 60 * 1000), 
+                expires: new Date(Date.now() + 15 * 60 * 1000), 
                 httpOnly: true
             }).json({ status: 200, message: 'Token updated' });
         });
@@ -443,6 +460,72 @@ const refreshToken = async (req, res) => {
         return res.status(500).json({status: 500, message: 'something went wrong updating token' + err});
     }
 }
+
+const createStatusClass = async (req, res) => {
+    try{
+        const {status_name} = req.body;
+
+        if (!status_name) return res.status(404).json({status: 404, message: 'Status name does not exist'});
+
+        const [resultDB] = await db.sequelize.query('CALL CreateStatus(:p_name)',
+            {
+                replacements: {
+                    p_name: status_name
+                },
+                type: db.Sequelize.QueryTypes.RAW
+            }
+        );
+        
+        if (resultDB.result == 1){
+            return res.status(201).json({status: 201, message: 'Status created'});
+        } else {
+            return res.status(203).json({status: 203, message: 'Status already exist'});
+        }
+    }
+    catch (e) {
+        console.log('Something went wrong', e);
+        return res.status(500).json({status: 500, message: 'Someting went wront' + e});
+    }
+}
+
+
+const createClass = async (req, res) => {     
+    try{
+        const {name, description, max_members, photo} = req.body;
+        const userId = req.info.id;
+
+        if(!userId) return res.status(404).json({status: 404, message: 'Id user not provided'});
+
+        if(!name || !description || !max_members || !photo) return res.status(400).json({status: 400, message: 'Some value on the req.body is missing'});
+
+        const [result] = await db.sequelize.query('CALL CreateNewClass(:id_user, :name, :description, :max_members, :photo)', 
+            {
+                replacements: {
+                    id_user: userId,
+                    name: name,
+                    description: description,
+                    max_members: max_members,
+                    photo: photo
+                },
+                type: db.Sequelize.QueryTypes.RAW
+            }
+        );
+
+        const statusClassCreated = result.class_inserted;
+        
+        if(statusClassCreated == 1 ) return res.status(200).json({status: 200, message: 'Class created!'});
+
+        return res.status(203).json({status: 203, message: 'Name not valid, Some class is active with that name'});
+    }
+    catch(err){
+        console.log('Something went wrong' + err);
+        return res.status(500).json({status: 500, message: 'Error: ' + err});
+    }    
+}   
+
+
+
+
 
 module.exports = {
     registerUser,
@@ -454,5 +537,7 @@ module.exports = {
     removeCookie,
     refreshToken,
     insertTokenBlackList,
-    getUserData
+    getUserData,
+    createStatusClass,
+    createClass
 }

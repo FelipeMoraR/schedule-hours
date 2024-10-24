@@ -10,6 +10,7 @@ const HomePage = lazy(() => import('./pages/HomePage/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage/LoginPage'));
 const ProfileUser = lazy(() => import('./pages/ProfileUser/ProfileUser'));
 const RegisterUser = lazy(() => import('./pages/RegisterUser/RegisterUser'));
+const CreateClass = lazy(() => import('./pages/RegisterClass/RegisterClass.tsx'));
 const NotFound = lazy(() => import('./pages/NotFound/NotFound'));
 
 function App() {
@@ -33,15 +34,16 @@ function App() {
     <Suspense fallback={<div>LOADING CLIENT PAGE</div>}>
         <Routes>
           {/* Public Routes */}
-          <Route path='/' element={<HomePage />} />
-          <Route path='/login-user' element={<LoginPage />} />
-          <Route path='/register-user' element={<RegisterUser />} />
+          <Route path = '/' element = {<HomePage />} />
+          <Route path = '/login-user' element = {<LoginPage />} />
+          <Route path = '/register-user' element = {<RegisterUser />} />
           
           {/* Private Routes */}
-          <Route path='/profile-user' element={<PrivateRoute element={<ProfileUser />} />} />
+          <Route path = '/profile-user' element = {<PrivateRoute element = {<ProfileUser />} />} />
+          <Route path = '/create-class' element = {<PrivateRoute element = {<CreateClass/>} />} />
           
           {/* 404 */}
-          <Route path='*' element={<NotFound />} />
+          <Route path = '*' element = {<NotFound />} />
         </Routes>
       </Suspense>
       

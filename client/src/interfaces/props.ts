@@ -70,3 +70,20 @@ export interface IErrorResponse {
     status: number;
     message: string;
 }
+
+export interface IRegisterClass { 
+    classes: Array<string>;
+}
+
+export interface ITextArea { 
+    id: string;
+    name: string;
+    label: string;
+    placeholder?: string;
+    maxlength?: number;
+    rows: number;
+    cols: number;
+    required: boolean | undefined;
+    classes: Array<string>;
+    onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+}

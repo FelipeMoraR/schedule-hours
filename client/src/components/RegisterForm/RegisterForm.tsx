@@ -45,12 +45,6 @@ const fetchRegisterUser = async (bodyReq: string) => {
 }
 
 function RegisterForm({ classes }: IRegisterForm) {
-    const [fName, setFname] = useState<string>('');
-    const [lastname, setLastname] = useState<string>('');
-    const [age, setAge] = useState<string>('');
-    const [rut, setRut] = useState<string>('');
-    const [username, setUsername] = useState<string>('');
-    const [passwrod, setPassword] = useState<string>('');
     const [errorForm, setErrorForm] = useState<Array<string>>([]);
     const { formatClasses } = formatClass(styles, classes);
     const { addIdError, removeIdError, emptyIdError, hasError } = identifyInputError();
@@ -59,133 +53,127 @@ function RegisterForm({ classes }: IRegisterForm) {
         status: 0,
         message: ''
     });
+
+    const [formValues, setFormValues] = useState({
+        "fName" : "",
+        "lastname" : "",
+        "age" : "",
+        "rut" : "",
+        "username" : "",
+        "password" : ""
+    })
+
     const navigate = useNavigate();
 
-    const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => { //We have to thing in a better way to do this.
-        const { name, value } = event.target;
-        switch (name){
-            case 'fName':
-                setFname(value);
-                return
-            case 'lastname':
-                setLastname(value);
-                return
-            case 'age':
-                setAge(value);
-                return
-            case 'rut':
-                setRut(value);
-                return
-            case 'username':
-                setUsername(value);
-                return
-            case 'password':
-                setPassword(value);
-                return
-        }
+    const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => { //We have to think in a better way to do this. //** NEW IDEA, EXTRACT VALUES FROM EVENT FORM
+        setFormValues({
+            ...formValues,
+            [event.target.id]: event.target.value
+        });
+        return;
     }
 
     const handleSubmitRegister = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const { fName, lastname, age, rut, username, password } = event.target as HTMLFormElement;
+        const { fName, lastname, age, rut, username, password } = formValues;
 
         const errors: string[] = [];
         const addError = (error: string) => errors.push(error);
 
         showModal('loadingRegister');
 
-        if(!validateOnlyLetters(fName.value)){
+        if(!validateOnlyLetters(fName)){
             addError('Solo se admiten letras en el primer nombre');
             addIdError('fName'); 
         }
 
-        if(!validateMaxLengthInput(fName.value, 20)){
+        if(!validateMaxLengthInput(fName, 20)){
             addError('Largo maximo para el primer nombre son 20 caracteres');
             addIdError('fName');
         }
 
-        if(!validateMinLengthInput(fName.value, 4)){
+        if(!validateMinLengthInput(fName, 4)){
             addError('Largo minimo para el primer nombre son 4 caracteres');
             addIdError('fName');
         }
 
-        if(validateOnlyLetters(fName.value) && validateMaxLengthInput(fName.value, 20) && validateMinLengthInput(fName.value, 4)) removeIdError('fName');
+        if(validateOnlyLetters(fName) && validateMaxLengthInput(fName, 20) && validateMinLengthInput(fName, 4)) removeIdError('fName');
         
 
-        if(!validateOnlyLetters(lastname.value)){
+        if(!validateOnlyLetters(lastname)){
             addError('Solo se admiten letras en el apellido paterno');
             addIdError('lastname');
         }
         
-        if(!validateMaxLengthInput(lastname.value, 20)){
+        if(!validateMaxLengthInput(lastname, 20)){
             addError('Largo maximo para el apellido son 20 caracteres');
             addIdError('lastname');
         }
         
-        if(!validateMinLengthInput(lastname.value, 4)){
+        if(!validateMinLengthInput(lastname, 4)){
             addError('Largo minimo para el apellido paterno son 4 caracteres');
             addIdError('lastname');
         }
 
-        if(validateOnlyLetters(lastname.value) && validateMaxLengthInput(lastname.value, 20) && validateMinLengthInput(lastname.value, 4)) removeIdError('lastname');
+        if(validateOnlyLetters(lastname) && validateMaxLengthInput(lastname, 20) && validateMinLengthInput(lastname, 4)) removeIdError('lastname');
 
-        if(!validateOnlyNumbers(age.value)){
+        if(!validateOnlyNumbers(age)){
             addError('La edad solo deben ser números');
             addIdError('age');
         }
 
-        if(!validateMaxLengthInput(age.value, 3)){
+        if(!validateMaxLengthInput(age, 3)){
             addError('Largo maximo para la edad son 3 números');
             addIdError('age');
         }
 
-        if(!validateMinLengthInput(age.value, 1)){
+        if(!validateMinLengthInput(age, 1)){
             addError('Largo minimo para la edad es 1 número');
             addIdError('age');
         }
         
-        if(validateOnlyNumbers(age.value) && validateMaxLengthInput(age.value, 3) && validateMinLengthInput(age.value, 1)) removeIdError('age');
+        if(validateOnlyNumbers(age) && validateMaxLengthInput(age, 3) && validateMinLengthInput(age, 1)) removeIdError('age');
 
-        if(!validateMaxLengthInput(rut.value, 9) || !validateMinLengthInput(rut.value, 9)){
+        if(!validateMaxLengthInput(rut, 9) || !validateMinLengthInput(rut, 9)){
             addError('Largo del Rut no valido, debe tener un largo de 9 caracteres');
             addIdError('rut');
         }
 
-        if(!validateRut(rut.value)){
+        if(!validateRut(rut)){
             addError('Rut no valido, formato valido 123456789 sin puntos ni guion');
             addIdError('rut');
         }
 
-        if(validateRut(rut.value) && validateMaxLengthInput(rut.value, 9) && validateMinLengthInput(rut.value, 9)) removeIdError('rut');
+        if(validateRut(rut) && validateMaxLengthInput(rut, 9) && validateMinLengthInput(rut, 9)) removeIdError('rut');
 
-        if(!validateOnlyNumberLetters(username.value)){
+        if(!validateOnlyNumberLetters(username)){
             addError('Nombre de usuario no valido, solo se admiten número y letras');
             addIdError('username');
         }
 
-        if(!validateMaxLengthInput(username.value, 10)){
+        if(!validateMaxLengthInput(username, 10)){
             addError('Largo maximo para el nombre de usuario son de 10 caracteres');
             addIdError('username');
         }
 
-        if(!validateMinLengthInput(username.value, 4)){
+        if(!validateMinLengthInput(username, 4)){
             addError('Largo minimo para el nombre de usuario son de 4 caracteres');
             addIdError('username');
         }
 
-        if(validateOnlyNumberLetters(username.value) && validateMaxLengthInput(username.value, 10) && validateMinLengthInput(username.value, 4)) removeIdError('username');
+        if(validateOnlyNumberLetters(username) && validateMaxLengthInput(username, 10) && validateMinLengthInput(username, 4)) removeIdError('username');
 
-        if(!validatePassword(password.value)){
+        if(!validatePassword(password)){
             addError('Contraseña no valida, debe contener al menos un número, un caracter especial del siguiente listado @ ! # $ % &');
             addIdError('password');
         }
 
-        if(!validateMaxLengthInput(password.value, 9) ||  !validateMinLengthInput(password.value, 9)){
+        if(!validateMaxLengthInput(password, 9) ||  !validateMinLengthInput(password, 9)){
             addError('La contraseña debe tener un largo de 9 caracteres');
             addIdError('password');
         }
 
-        if(validatePassword(password.value) && validateMaxLengthInput(password.value, 9) && validateMinLengthInput(password.value, 9)) removeIdError('password');
+        if(validatePassword(password) && validateMaxLengthInput(password, 9) && validateMinLengthInput(password, 9)) removeIdError('password');
         
         
         if(errors.length > 0) {
@@ -197,16 +185,16 @@ function RegisterForm({ classes }: IRegisterForm) {
         emptyIdError();
         setErrorForm([]);
 
-        const { run, dv } = extractComponentRut(rut.value);
+        const { run, dv } = extractComponentRut(rut);
 
         const objBodyRegister = JSON.stringify({
-            "username": username.value,
-            "password": password.value,
-            "first_name": fName.value,
-            "last_name": lastname.value,
+            "username": username,
+            "password": password,
+            "first_name": fName,
+            "last_name": lastname,
             "run": run, 
             "run_dv": dv,
-            "age": age.value,
+            "age": age,
             "id_type_user": 2
         })
 
@@ -272,7 +260,7 @@ function RegisterForm({ classes }: IRegisterForm) {
                     type = 'text'
                     name = 'fName'
                     required = {true}
-                    value={fName}
+                    value={formValues.fName}
                     maxLength={20}
                     classes={hasError('fName') ? ['error-class'] : ['normal-class']} 
                     onChange={handleOnChange}
@@ -286,7 +274,7 @@ function RegisterForm({ classes }: IRegisterForm) {
                     name = 'lastname'
                     required = {true}
                     maxLength={20}
-                    value={lastname}
+                    value={formValues.lastname}
                     classes={hasError('lastname') ? ['error-class'] : ['normal-class']} 
                     onChange={handleOnChange}
                 />
@@ -297,7 +285,7 @@ function RegisterForm({ classes }: IRegisterForm) {
                     type = 'text'
                     name = 'age'
                     required = {true}
-                    value={age}
+                    value={formValues.age}
                     maxLength={3}
                     classes={hasError('age') ? ['error-class'] : ['normal-class']} 
                     onChange={handleOnChange}
@@ -311,7 +299,7 @@ function RegisterForm({ classes }: IRegisterForm) {
                     name = 'rut'
                     required = {true}
                     maxLength={9}
-                    value={rut}
+                    value={formValues.rut}
                     classes={hasError('rut') ? ['error-class'] : ['normal-class']} 
                     onChange={handleOnChange}
                 />
@@ -322,7 +310,7 @@ function RegisterForm({ classes }: IRegisterForm) {
                     type = 'text'
                     name = 'username'
                     required = {true}
-                    value={username}
+                    value={formValues.username}
                     maxLength={10}
                     classes={hasError('username') ? ['error-class'] : ['normal-class']} 
                     onChange={handleOnChange}
@@ -334,7 +322,7 @@ function RegisterForm({ classes }: IRegisterForm) {
                     type = 'password'
                     name = 'password'
                     required = {true}
-                    value={passwrod}
+                    value={formValues.password}
                     maxLength={9}
                     classes={hasError('password') ? ['error-class'] : ['normal-class']} 
                     onChange={handleOnChange}

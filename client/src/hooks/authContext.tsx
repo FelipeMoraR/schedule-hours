@@ -300,6 +300,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
             if(isAuthenticated){
                 const dataUser = await fetchGetUser();
                 if(dataUser !== null){
+                    console.log(dataUser);
                     setUserData(dataUser);
                 }
                     
