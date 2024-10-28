@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { registerUser, loginUser, logoutUser, midleWareVerifyToken, createTypeUser, cookieValidator, 
-    removeCookie, refreshToken, insertTokenBlackList, getUserData, createStatusClass, createClass} = require('../controller/controller')
+    removeCookie, refreshToken, insertTokenBlackList, getUserData, createStatusClass, createClass, resUploadCloudImg} = require('../controller/controller')
 
 
 router.post('/create-type-user', midleWareVerifyToken, createTypeUser);
@@ -15,5 +15,6 @@ router.get('/get-user-info', midleWareVerifyToken, getUserData);
 router.post('/insert-token-black-list', insertTokenBlackList);
 router.post('/insert-status-class', midleWareVerifyToken, createStatusClass);
 router.post('/create-class', midleWareVerifyToken, createClass);
+router.post('/upload-image', resUploadCloudImg);
 
 module.exports = router;

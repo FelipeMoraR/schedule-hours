@@ -3,6 +3,60 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('../../models/index');
 const secret = process.env.JWT_SECRET;
+const cloudinary = require('cloudinary').v2;
+
+
+//Variables of our cloudinary client
+const cloud_name = process.env.CLOUD_NAME;
+const cloud_api_key = process.env.CLOUD_API_KEY;
+const cloud_api_secret = process.env.CLOUD_API_SECRET;
+
+
+cloudinary.config({
+  cloud_name: cloud_name,
+  api_key: cloud_api_key,
+  api_secret: cloud_api_secret
+});
+
+//These are optional parameters => https://cloudinary.com/documentation/image_upload_api_reference
+const opts = {
+  invalidate: true,
+  resource_type: 'image',
+  folder: 'images_schedule'
+}; 
+
+
+
+const uploadCloudImg = (image) => {
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.upload(image, opts, (error, result) => {
+            if(result && result.secure_url) {
+                console.log('URL img cloudinary =>', result.secure_url);
+                return resolve(result.secure_url);
+            }
+
+            console.log('Error cloudinary => ', error.message);
+            return reject(error.message);
+        });
+    });
+};
+
+const resUploadCloudImg = (req, res) => {
+    try{
+        const { image } = req.body;
+    
+    if (!image) return res.status(404).json({status: 404, message: 'Image not provided'});
+
+    uploadCloudImg(image)
+        .then((url) => res.status(200).json({status: 200, message: url}))
+        .catch((err) => res.status(500).json({status: 500, message: err}))
+    }
+    catch(err){
+        console.log(err);
+        return res.status(500).json({status: 500, message: 'Something went wrong'});
+    }
+};
+
 
 //using it
 const jwtVerifyAsync = (token, secret) => {
@@ -539,5 +593,6 @@ module.exports = {
     insertTokenBlackList,
     getUserData,
     createStatusClass,
-    createClass
+    createClass,
+    resUploadCloudImg
 }

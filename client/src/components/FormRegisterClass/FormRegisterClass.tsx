@@ -6,6 +6,8 @@ import React, { useState } from 'react';
 import Button from '../Button/Button';
 import InputField from '../InputField/InputField';
 import TextArea from '../TextArea/TextArea';
+import convertBase64 from '../../utils/decodeImageBase64';
+
 
 function FormRegisterClass({ classes }: IRegisterClass) {
     const { formatClasses } = formatClass(styles, classes);
@@ -16,20 +18,25 @@ function FormRegisterClass({ classes }: IRegisterClass) {
         "photo": ""
     });
 
-    const handleTextAreaOnChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setFormValues({
-            ...formValues,
-            [event.target.id]: event.target.value
-        });
+    
+    const handleInputPhotoOnChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        
+        const files = event.target.files; //Controll when they try to upload other thing than an image, and it has to be just one
+        if(files){
+            const imgBs64 = await convertBase64(files[0]);
+            console.log('LÑSKDFGKJ => ', imgBs64);
+        }
+        
         return;
     }
 
-
-    const handleInputOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputOnChange = (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
+        console.log(event.target.value);
         setFormValues({
             ...formValues,
             [event.target.id]: event.target.value
         });
+
         return;
     }
 
@@ -62,7 +69,7 @@ function FormRegisterClass({ classes }: IRegisterClass) {
                     cols = {20}
                     required = {true}
                     classes = {['lol']}
-                    onChange={handleTextAreaOnChange}
+                    onChange={handleInputOnChange}
                 />
 
                 <InputField
@@ -80,12 +87,12 @@ function FormRegisterClass({ classes }: IRegisterClass) {
                 <InputField
                     id = {'photo'}
                     label = {'Foto clase'}
-                    type = {'text'}
+                    type = {'file'}
                     name = {'photo'}
                     required = {true}
                     value={formValues.photo}
                     classes = {['lol']}
-                    onChange={handleInputOnChange}
+                    onChange={handleInputPhotoOnChange}
                 />
 
 
