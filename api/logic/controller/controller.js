@@ -569,13 +569,32 @@ const createClass = async (req, res) => {
         
         if(statusClassCreated == 1 ) return res.status(200).json({status: 200, message: 'Class created!'});
 
-        return res.status(203).json({status: 203, message: 'Name not valid, Some class is active with that name'});
+        return res.status(500).json({status: 500, message: 'Something went wrong, class not created'});
     }
     catch(err){
-        console.log('Something went wrong' + err);
+        console.log('Something went wrong ' + err);
         return res.status(500).json({status: 500, message: 'Error: ' + err});
     }    
 }   
+
+
+const getAllCategoryClass = async (req, res) => {
+    try{
+        const result = await db.sequelize.query('SELECT id_category, name FROM category;', 
+            {
+                type: db.Sequelize.QueryTypes.SELECT
+            }
+        )
+
+        if(!result) return res.status(204).json({status: 204, message: 'No results in the petition'});
+
+        return res.status(200).json({status: 200, data: result});
+    } 
+    catch(err){
+        console.log('Something went wrong ' + err);
+        return res.status(500).json({status: 500, message: 'Error: ' + err});
+    }
+}
 
 
 
@@ -594,5 +613,6 @@ module.exports = {
     getUserData,
     createStatusClass,
     createClass,
-    resUploadCloudImg
+    resUploadCloudImg,
+    getAllCategoryClass
 }

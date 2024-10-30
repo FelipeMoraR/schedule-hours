@@ -1,10 +1,8 @@
-
-
-const fetchCreateClass = async (body: string) => {
+const fetchUploadImg = async (body: string) => {
     try{
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
-        const url = apiUrl + '/auth/api/create-class';
-
+        const url = apiUrl + '/auth/api/upload-image';
+        
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -29,4 +27,4 @@ const fetchCreateClass = async (body: string) => {
 }
 
 
-export default fetchCreateClass;
+export default fetchUploadImg;

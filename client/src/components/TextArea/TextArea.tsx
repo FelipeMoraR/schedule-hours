@@ -10,7 +10,7 @@ function TextArea({id, name, label, placeholder, maxlength, rows, cols, required
     return(
         <>
             <div className = {formatClasses}>
-                <label htmlFor="">{label}</label>
+                <label htmlFor={id}>{label}</label>
                 <textarea 
                     id = {id} 
                     name = {name} 

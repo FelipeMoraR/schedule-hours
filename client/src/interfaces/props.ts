@@ -87,3 +87,8 @@ export interface ITextArea {
     classes: Array<string>;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
+
+export interface IAllCategoryClass { 
+    id_category: number;
+    name: string;
+}

@@ -7,7 +7,7 @@ function InputField({id, label, type, name, required, placeholder, value, defaul
 
     return(
         <div className = {formatClasses}>
-            <label> {label} </label>
+            <label htmlFor={id}> {label} </label>
             <input 
                 id = {id}
                 type = {type}
