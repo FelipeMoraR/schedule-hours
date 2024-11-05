@@ -62,10 +62,13 @@ export function identifyInputError(){
             return prev
         });
     };
+
     const removeIdError = (id: string) => {
         setArrayIdError(prevArray => prevArray.filter((value: string) => value !== id));
     }
+
     const emptyIdError = () => setArrayIdError([]);
+    
     const hasError = (id : string) => arrayIdError.some((value:string) => id == value );
     
     return { addIdError, removeIdError, emptyIdError, hasError }
