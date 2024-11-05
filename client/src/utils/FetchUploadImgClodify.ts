@@ -14,14 +14,12 @@ const fetchUploadImg = async (body: string) => {
 
         const result = await response.json();
 
-        if (result.status != 200) return false;
-
         return result
         
     }
     catch (e) {
-        console.error('Something went wrong' + e);
-        return false;
+        console.error('Something went wrong ' + e);
+        return {status: 500, message: 'Error ' + e};
     }
 
 }

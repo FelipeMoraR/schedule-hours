@@ -8,8 +8,8 @@ if (process.env.NODE_ENV !== 'production'){
     require('dotenv').config();
 }
 
-//This allow send json to the db, in POST.JS you're sending a json.
-app.use(express.json());
+//This allow send json to the db, in POST.JS you're sending a json, the limit size of js is 100kb, so we have to configurate it.
+app.use(express.json({ limit: '10mb' }));
 
 //Corse to use third apis conexions
 app.use(cors({

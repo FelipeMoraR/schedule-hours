@@ -27,11 +27,30 @@ const opts = {
 
 
 
+const insertCategoryClass = async (id_class, categories) => {
+    try{
+        await Promise.all(categories.map(async element => {
+            await db.sequelize.query('INSERT INTO CLASS_CATEGORY (id_category, id_class, createdAt, updatedAt)  VALUES (:p_id_category, :p_id_class, NOW(), NOW())',
+                {
+                    replacements: {
+                        p_id_category: element, 
+                        p_id_class: id_class
+                    },
+                    type: db.Sequelize.QueryTypes.RAW
+                }
+            )
+        }));
+        return true;
+    } catch(err){
+        console.error('Something went wrong ' + err);
+        return false;
+    }
+};
+
 const uploadCloudImg = (image) => {
     return new Promise((resolve, reject) => {
         cloudinary.uploader.upload(image, opts, (error, result) => {
             if(result && result.secure_url) {
-                console.log('URL img cloudinary =>', result.secure_url);
                 return resolve(result.secure_url);
             }
 
@@ -44,15 +63,13 @@ const uploadCloudImg = (image) => {
 const resUploadCloudImg = (req, res) => {
     try{
         const { image } = req.body;
-    
-    if (!image) return res.status(404).json({status: 404, message: 'Image not provided'});
+        if (!image) return res.status(404).json({status: 404, message: 'Image not provided'});
 
-    uploadCloudImg(image)
-        .then((url) => res.status(200).json({status: 200, message: url}))
-        .catch((err) => res.status(500).json({status: 500, message: err}))
+        uploadCloudImg(image)
+            .then((url) => res.status(200).json({status: 200, message: url}))
+            .catch((err) => res.status(500).json({status: 500, message: err}))
     }
     catch(err){
-        console.log(err);
         return res.status(500).json({status: 500, message: 'Something went wrong'});
     }
 };
@@ -545,7 +562,7 @@ const createStatusClass = async (req, res) => {
 
 const createClass = async (req, res) => {     
     try{
-        const {name, description, max_members, photo} = req.body;
+        const {name, description, max_members, photo, categories} = req.body;
         const userId = req.info.id;
 
         if(!userId) return res.status(404).json({status: 404, message: 'Id user not provided'});
@@ -566,8 +583,17 @@ const createClass = async (req, res) => {
         );
 
         const statusClassCreated = result.class_inserted;
-        
-        if(statusClassCreated == 1 ) return res.status(200).json({status: 200, message: 'Class created!'});
+        const idClassCreated= result.new_class;
+
+        if(statusClassCreated == 1 ) {
+            console.log('Class created!!, generating categories...');
+            
+            const statusInsertCategoryClass = await insertCategoryClass(idClassCreated, categories);
+
+            if(!statusInsertCategoryClass) return res.status(200).json({status: 500, message: 'Error inserting categories'});
+
+            return res.status(200).json({status: 200, message: 'Class created! and categories inserted'});
+        }
 
         return res.status(500).json({status: 500, message: 'Something went wrong, class not created'});
     }

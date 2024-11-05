@@ -10,6 +10,18 @@ import InputField from '../InputField/InputField';
 import TextArea from '../TextArea/TextArea';
 import convertBase64 from '../../utils/decodeImageBase64';
 import { IAllCategoryClass } from '../../interfaces/props';
+import { useModal } from '../../utils/UseModal.ts';
+import Modal from '../Modal/Modal.tsx';
+import { 
+    validateOnlyNumberLetters, 
+    validateOnlyLetters, 
+    validateOnlyNumbers, 
+    validateMaxLengthInput, 
+    validateMinLengthInput,
+    identifyInputError
+    } from '../../utils/InputValidator.tsx';
+
+
 
 function FormRegisterClass({ classes }: IRegisterClass) {
     const { formatClasses } = formatClass(styles, classes);
@@ -20,8 +32,11 @@ function FormRegisterClass({ classes }: IRegisterClass) {
         "photo": ""
     });
     const [imgUri64, setImgUri64] = useState<string>('');
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isLoadingCategory, setIsLoadingCategory] = useState<boolean>(true);
     const [allCategoryClass, setAllCategoryClass] = useState<IAllCategoryClass[]>([]);
+    const [cateogyClassSelected, setCateogyClassSelected] = useState<Array<string>>([]);
+    const { showModal, closeModal, isModalOpen } = useModal();
+    const [messageResponse, setMessageResponse] = useState<string>();
 
     const handleInputOnChange = async (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
         setFormValues({
@@ -34,11 +49,12 @@ function FormRegisterClass({ classes }: IRegisterClass) {
         if(!event.target.files) return;
 
         const files = event.target.files; //Controll when they try to upload other thing than an image, and it has to be just one
-            
+       
         if(!files) return;
 
         if(files[0].type.startsWith('image/')){
             const imgBs64 = await convertBase64(files[0]);
+            
             if(typeof(imgBs64) !== 'string') return
             
             setImgUri64(imgBs64);
@@ -47,48 +63,70 @@ function FormRegisterClass({ classes }: IRegisterClass) {
         return;
     }
 
-    const handleInputOnChangeTEST = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputOnChangeCategory = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const { value, checked } = event.target;
 
-        console.log(value, checked);
+        if(checked && value){
+            setCateogyClassSelected([
+                ...cateogyClassSelected,
+                value
+            ])
+            return
+        }
+
+        const arrayClean = cateogyClassSelected.filter((e) => e != value);
+
+        setCateogyClassSelected(arrayClean);
     }
 
     const handleSubmitRegisterClass = async (event: React.FormEvent<HTMLFormElement>) =>{
         event.preventDefault();
-
+        
+        showModal('loadingForm');
 
         const bodyUploadImg = JSON.stringify({
             "image": imgUri64
         });
          
-        const urlImg = await fetchUploadImg(bodyUploadImg);
+        const responseUrlImg = await fetchUploadImg(bodyUploadImg);
         
-        if(!urlImg) return;
-        console.log(typeof(urlImg.message));
+        if(!responseUrlImg) {
+            closeModal(); //Closing loadingForm modal
+        
+            setMessageResponse(responseUrlImg.message);
+            showModal('infoResponse');
+            return;
+        };
         
         const bodyCreateClass = JSON.stringify({
             "name": formValues["name"],
             "description": formValues["description"], 
             "max_members": formValues["max_members"], 
-            "photo": urlImg.message
+            "photo": 's',
+            "categories": cateogyClassSelected
         });
         
         const responseCreateClass = await fetchCreateClass(bodyCreateClass);
         
-        console.log('responseCreateClass =>', responseCreateClass);
+        closeModal(); //Closing loadingForm modal
+        
+        setMessageResponse(responseCreateClass.message);
+        showModal('infoResponse');
+
+        return;
     }
 
     useEffect(() => {
         const handlerGetAllCategoryClass = async () => {
             const result = await fetchGetAllCategoryClass();
-            setIsLoading(false);
+            setIsLoadingCategory(false);
             setAllCategoryClass(result)
         }
         
         handlerGetAllCategoryClass();
-    }, [])
+    }, []);
 
-    if(isLoading) {
+    if(isLoadingCategory) {
         return(
             <>
                 CARGANDO CATEGORIAS :UUU
@@ -98,6 +136,25 @@ function FormRegisterClass({ classes }: IRegisterClass) {
 
     return (
         <>
+            <Modal 
+                id = 'loadingForm'
+                type = 'loader'
+                title = 'loadingForm'
+                isOpen = {isModalOpen('loadingForm')}
+                classes = {['modal-infomative-grey']}
+                onClose = {closeModal}
+            />
+
+            <Modal 
+                id = 'infoResponse'
+                type = 'informative'
+                title = 'Result'
+                paragraph = {messageResponse}
+                isOpen = {isModalOpen('infoResponse')}
+                classes = {['modal-infomative-grey']}
+                onClose = {closeModal}
+            />
+
             <form className= {formatClasses} onSubmit={handleSubmitRegisterClass}>
                 <InputField
                     id = {'name'}
@@ -155,17 +212,17 @@ function FormRegisterClass({ classes }: IRegisterClass) {
                                 label = {category.name}
                                 type = {'checkbox'}
                                 name = {'photo'}
-                                required = {true}
-                                value={category.name}
+                                required = {false}
+                                value={category.id_category}
                                 classes = {['lol']}
-                                onChange={handleInputOnChangeTEST}
+                                onChange={handleInputOnChangeCategory}
                                 />
                             </div>
                         ))  //Here is the change, this end with a double (), if we use ({}) you have to write the return or this wouldnt work
                     ) : (
                         <p>NO HAY NIUNA WEA ALSKDÑJGSDFGK AAAAAAAAA</p>
                     )
-                };
+                }
                 <Button
                         id = 'btnRegister'
                         text = 'Registrarse'
