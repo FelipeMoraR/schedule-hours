@@ -1,0 +1,7 @@
+.divitionGridClass{
+    grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
+}
+
+.imgClass{
+    max-width: 300px;
+}

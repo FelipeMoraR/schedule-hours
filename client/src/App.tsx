@@ -10,8 +10,9 @@ const HomePage = lazy(() => import('./pages/HomePage/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage/LoginPage'));
 const ProfileUser = lazy(() => import('./pages/ProfileUser/ProfileUser'));
 const RegisterUser = lazy(() => import('./pages/RegisterUser/RegisterUser'));
-const CreateClass = lazy(() => import('./pages/RegisterClass/RegisterClass.tsx'));
+const CreateClass = lazy(() => import('./pages/RegisterClass/RegisterClass'));
 const NotFound = lazy(() => import('./pages/NotFound/NotFound'));
+const AllClases = lazy(() => import('./pages/AllClasses/AllClases'));
 
 function App() {
   const {isLoadingLogout} = useAuthContext();
@@ -41,7 +42,8 @@ function App() {
           {/* Private Routes */}
           <Route path = '/profile-user' element = {<PrivateRoute element = {<ProfileUser />} />} />
           <Route path = '/create-class' element = {<PrivateRoute element = {<CreateClass/>} />} />
-          
+          <Route path = '/all-classes' element = {<PrivateRoute element = {<AllClases/>} />} />
+
           {/* 404 */}
           <Route path = '*' element = {<NotFound />} />
         </Routes>

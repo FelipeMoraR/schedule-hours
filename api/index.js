@@ -11,7 +11,7 @@ if (process.env.NODE_ENV !== 'production'){
 //This allow send json to the db, in POST.JS you're sending a json, the limit size of js is 100kb, so we have to configurate it.
 app.use(express.json({ limit: '10mb' }));
 
-//Corse to use third apis conexions
+//Cors to use third apis conexions
 app.use(cors({
   origin: process.env.URL_FRONT,  
   credentials: true // This allow work with cookies

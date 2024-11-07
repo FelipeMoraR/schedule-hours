@@ -603,8 +603,25 @@ const createClass = async (req, res) => {
     }    
 }   
 
+const getAllClasses = async (_, res) => {
+    try{
+        const result = await db.sequelize.query('SELECT cl.id_class, cl.name AS class_name, cl.description, cl.max_number_member, cl.photo, st.name AS status_name FROM CLASS cl INNER JOIN STATUS st ON cl.id_status = st.id_status ORDER BY cl.createdAt DESC', 
+            {
+                type: db.Sequelize.QueryTypes.SELECT
+            }
+        );
 
-const getAllCategoryClass = async (req, res) => {
+        if (!result) return res.status(404).json({status: 404, message: 'Classes not founded'});
+
+        return res.status(200).json({status: 200, message: 'Success', data: result});
+    }
+    catch(err){
+        console.error('Something went wrong ' + err);
+        return res.status(500).json({status: 500, message: 'Error ' + err})
+    }
+};
+
+const getAllCategoryClass = async (_, res) => {
     try{
         const result = await db.sequelize.query('SELECT id_category, name FROM category;', 
             {
@@ -620,7 +637,7 @@ const getAllCategoryClass = async (req, res) => {
         console.log('Something went wrong ' + err);
         return res.status(500).json({status: 500, message: 'Error: ' + err});
     }
-}
+};
 
 
 
@@ -640,5 +657,6 @@ module.exports = {
     createStatusClass,
     createClass,
     resUploadCloudImg,
-    getAllCategoryClass
+    getAllCategoryClass,
+    getAllClasses
 }

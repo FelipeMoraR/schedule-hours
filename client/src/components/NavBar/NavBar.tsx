@@ -76,6 +76,14 @@ function NavBar() {
                                 onClick = {handleButton}
                             /> 
 
+                            <Button 
+                                id = 'allClasses'
+                                text = 'Clases'
+                                type = 'button'
+                                classes = {location.pathname === '/all-classes' ? ['blocked'] : ['']}
+                                onClick = {handleButton}
+                            /> 
+
                             {
                                 userData && userData.id_type_user === 2 ? (
                                     <h1>estudiante</h1>

@@ -17,6 +17,9 @@ function handlerNavigationNavBar(id:string, navigate: (path: string) => void) {
         case 'createClass':
             navigate('/create-class');
             return;
+        case 'allClasses':
+            navigate('/all-classes');
+            return
         default:
             navigate('/');
             return;

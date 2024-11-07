@@ -4,39 +4,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { validateOnlyNumberLetters, validateMaxLengthInput, validateMinLengthInput } from '../utils/InputValidator.tsx';
 import removeCookie from '../utils/RemoveCookie.ts';
 import fetchRefreshToken from '../utils/FetchRefreshCookie.ts';
-
+import fetchVerifyToken from '../utils/FetchVerifyToken.ts';
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
-const fetchVerifyToken = async (url: string) => {
-    try{
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include'
-        });
-        
-        const data = await response.json(); // Here extract the body of the response
-        
-        if(data.status === 404){
-            console.error('Error in the response', data.message);
-            return null
-        }
 
-        if (data.status !== 200){
-            console.error('Error in the response', data.message);
-            return false
-        }
-        
-        return true
-    }
-    catch(err: any){
-        console.error(err);
-        return false
-    }
-}
 
 const fetchLogoutUser = async (url: string) => {
     try{
@@ -132,17 +104,8 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     
     const verfyToken = async () => {
         setIsLoadingVerifyCookie(true);
-        const apiUrl = import.meta.env.VITE_BACKEND_URL;
-        const url = apiUrl + '/auth/api/verify-cookie';
         
-        if(!url.includes('/auth/api/verify-cookie')){
-            console.error('Bad url');
-            setIsLoadingVerifyCookie(false);
-            setIsAuthenticated(false);
-            return false
-        }
-
-        const isValid = await fetchVerifyToken(url);
+        const isValid = await fetchVerifyToken();
         
         if(isValid === null){
             setIsAuthenticated(false);

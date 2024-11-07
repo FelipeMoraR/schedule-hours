@@ -20,8 +20,9 @@ import {
     validateMinLengthInput,
     identifyInputError
     } from '../../utils/InputValidator.tsx';
-
-
+import fetchRefreshToken from '../../utils/FetchRefreshCookie.ts';
+import { useNavigate } from 'react-router-dom';
+import fetchVerifyToken from '../../utils/FetchVerifyToken.ts';
 
 function FormRegisterClass({ classes }: IRegisterClass) {
     const { formatClasses } = formatClass(styles, classes);
@@ -40,7 +41,29 @@ function FormRegisterClass({ classes }: IRegisterClass) {
     const { addIdError, removeIdError, emptyIdError, hasError } = identifyInputError();
     const [errorForm, setErrorForm] = useState<Array<string>>([]);
     const [errorFormatImg, setErrorFormatImg] = useState('');
+    const navigate = useNavigate();
 
+
+
+    const validateSesion = async () => {
+        const responseVerifyToken = await fetchVerifyToken();
+
+        if(!responseVerifyToken){ //There is no token but maybe would be a refresh token
+            const responseRefreshToken = await fetchRefreshToken(); //we can upload the token?
+
+            if(!responseRefreshToken) { //With this we controll the token expiration while we have a refresh token working
+                closeModal(); //Closing loadingForm modal
+
+                setMessageResponse('Sesion caducada');
+                showModal('infoResponse');
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                navigate('/login-user');
+                return
+            }            
+        }
+    };
 
     const handleInputOnChange = async (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
         setFormValues({
@@ -177,6 +200,8 @@ function FormRegisterClass({ classes }: IRegisterClass) {
         setErrorForm([]);
         
         showModal('loadingForm');
+
+        validateSesion();
 
         const bodyUploadImg = JSON.stringify({
             "image": imgUri64
@@ -338,7 +363,7 @@ function FormRegisterClass({ classes }: IRegisterClass) {
                             </div>
                         ))  //Here is the change, this end with a double (), if we use ({}) you have to write the return or this wouldnt work
                     ) : (
-                        <p>NO HAY NIUNA WEA ALSKDÑJGSDFGK AAAAAAAAA</p>
+                        <p>No hay ninguna categoria</p>
                     )
                 }
                 <Button

@@ -2,23 +2,34 @@ const express = require('express');
 const router = express.Router();
 const { registerUser, loginUser, logoutUser, midleWareVerifyToken, createTypeUser, cookieValidator, 
     removeCookie, refreshToken, insertTokenBlackList, getUserData, createStatusClass, createClass, resUploadCloudImg,
-    getAllCategoryClass
+    getAllCategoryClass, getAllClasses
 
 } = require('../controller/controller')
 
 
-router.post('/create-type-user', midleWareVerifyToken, createTypeUser);
-router.post('/logout-user', midleWareVerifyToken, logoutUser);
-router.get('/verify-cookie', midleWareVerifyToken, cookieValidator);
+
 router.post('/remove-cookie', removeCookie);
 router.get('/refresh-token', refreshToken);
 router.post('/register-user', registerUser); //This is how you can add the middleware to protect routes.
 router.post('/login-user', loginUser);
-router.get('/get-user-info', midleWareVerifyToken, getUserData);
 router.post('/insert-token-black-list', insertTokenBlackList);
+
+//Routes protected
+router.post('/create-type-user', midleWareVerifyToken, createTypeUser);
+router.post('/logout-user', midleWareVerifyToken, logoutUser);
+router.get('/verify-cookie', midleWareVerifyToken, cookieValidator);
+router.get('/get-user-info', midleWareVerifyToken, getUserData);
 router.post('/insert-status-class', midleWareVerifyToken, createStatusClass);
 router.post('/create-class', midleWareVerifyToken, createClass);
 router.post('/upload-image', midleWareVerifyToken, resUploadCloudImg);
-router.get('/all-category-class', getAllCategoryClass)
+router.get('/all-category-class', midleWareVerifyToken, getAllCategoryClass);
+router.get('/all-classes', getAllClasses); //Remember add midleware.
+
+
+
+
+
+
+
 
 module.exports = router;

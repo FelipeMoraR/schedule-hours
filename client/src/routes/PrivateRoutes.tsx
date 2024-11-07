@@ -12,7 +12,7 @@ function  PrivateRoute({ element }: IPrivateRouteProps) {
         if(!isLoadingVerifyCookie){
             setIsLoadingPrivate(false); //This is for the page is reloaded but with the f5.
         }
-    }, [ isLoadingVerifyCookie, isLoadingPrivate, isAuthenticated]);
+    }, [ isLoadingVerifyCookie, isLoadingPrivate, isAuthenticated ]);
 
     if(isLoadingPrivate || isLoadingVerifyCookie){
         return(

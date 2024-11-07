@@ -92,3 +92,22 @@ export interface IAllCategoryClass {
     id_category: number;
     name: string;
 }
+
+export interface IAllClasses { 
+    id_class: number;
+    class_name: string;
+    description: string;
+    max_number_member: number;
+    photo: string;
+    status_name: string;
+}
+
+
+export interface IViewClass {
+    id_class: number;
+    class_name: string;
+    description: string;
+    max_number_member: number;
+    photo: string;
+    status_name: string;
+}
