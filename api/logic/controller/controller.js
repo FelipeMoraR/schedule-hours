@@ -603,10 +603,25 @@ const createClass = async (req, res) => {
     }    
 }   
 
-const getAllClasses = async (_, res) => {
+const getAllClasses = async (req, res) => {
     try{
-        const result = await db.sequelize.query('SELECT cl.id_class, cl.name AS class_name, cl.description, cl.max_number_member, cl.photo, st.name AS status_name FROM CLASS cl INNER JOIN STATUS st ON cl.id_status = st.id_status ORDER BY cl.createdAt DESC', 
+        const { page = 1, limit = 3 } = req.query;
+        const offset = (page - 1) * limit;
+
+        const result = await db.sequelize.query(`
+                SELECT 
+                    cl.id_class, 
+                    cl.name AS class_name, 
+                    cl.description, 
+                    cl.max_number_member, 
+                    cl.photo, 
+                    st.name AS status_name 
+                FROM CLASS cl 
+                INNER JOIN STATUS st ON cl.id_status = st.id_status 
+                ORDER BY cl.createdAt DESC 
+                LIMIT :limit OFFSET :offset`, 
             {
+                replacements: {limit: parseInt(limit), offset: parseInt(offset)},
                 type: db.Sequelize.QueryTypes.SELECT
             }
         );
@@ -620,6 +635,25 @@ const getAllClasses = async (_, res) => {
         return res.status(500).json({status: 500, message: 'Error ' + err})
     }
 };
+
+const getTotalCountClasses = async (_, res) => {
+    try{
+        const totalItemsResult = await db.sequelize.query(
+            `SELECT COUNT(*) AS totalItems FROM CLASS`,
+            { type: db.Sequelize.QueryTypes.SELECT }
+        );
+        const totalItems = totalItemsResult[0].totalItems;
+    
+        if(!totalItems) return res.status(404).json({status: 404, message: 'No count'});
+    
+        return res.status(200).json({status: 200, totalItems: totalItems});
+    }
+    catch(err){
+        console.error('Error ' + err);
+        return res.status(500).json({status: 500, message: 'Error ' + err});
+    }
+    
+}
 
 const getAllCategoryClass = async (_, res) => {
     try{
@@ -658,5 +692,6 @@ module.exports = {
     createClass,
     resUploadCloudImg,
     getAllCategoryClass,
-    getAllClasses
+    getAllClasses,
+    getTotalCountClasses
 }

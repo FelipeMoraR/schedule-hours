@@ -20,9 +20,8 @@ import {
     validateMinLengthInput,
     identifyInputError
     } from '../../utils/InputValidator.tsx';
-import fetchRefreshToken from '../../utils/FetchRefreshCookie.ts';
 import { useNavigate } from 'react-router-dom';
-import fetchVerifyToken from '../../utils/FetchVerifyToken.ts';
+import validateSesion from '../../utils/SesionValidator.ts';
 
 function FormRegisterClass({ classes }: IRegisterClass) {
     const { formatClasses } = formatClass(styles, classes);
@@ -45,25 +44,7 @@ function FormRegisterClass({ classes }: IRegisterClass) {
 
 
 
-    const validateSesion = async () => {
-        const responseVerifyToken = await fetchVerifyToken();
-
-        if(!responseVerifyToken){ //There is no token but maybe would be a refresh token
-            const responseRefreshToken = await fetchRefreshToken(); //we can upload the token?
-
-            if(!responseRefreshToken) { //With this we controll the token expiration while we have a refresh token working
-                closeModal(); //Closing loadingForm modal
-
-                setMessageResponse('Sesion caducada');
-                showModal('infoResponse');
-
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                navigate('/login-user');
-                return
-            }            
-        }
-    };
+    
 
     const handleInputOnChange = async (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
         setFormValues({
@@ -136,6 +117,8 @@ function FormRegisterClass({ classes }: IRegisterClass) {
     const handleSubmitRegisterClass = async (event: React.FormEvent<HTMLFormElement>) =>{
         event.preventDefault();
         
+        showModal('loadingForm');
+
         const errors: string[] = [];
         const addError = (error: string) => errors.push(error);
         const { name, description, max_members, photo } = formValues;
@@ -198,10 +181,20 @@ function FormRegisterClass({ classes }: IRegisterClass) {
 
         emptyIdError();
         setErrorForm([]);
-        
-        showModal('loadingForm');
+    
+        const statusSesion = await validateSesion();
 
-        validateSesion();
+        if(!statusSesion){
+            closeModal(); //Closing loadingForm modal
+
+            setMessageResponse('Sesion caducada');
+            showModal('infoResponse');
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            navigate('/login-user');
+            return
+        }
 
         const bodyUploadImg = JSON.stringify({
             "image": imgUri64

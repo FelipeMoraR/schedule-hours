@@ -254,7 +254,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
                 return
             }
         }
-        
+    
         checkTokenLoged();
     }, [location]);
 

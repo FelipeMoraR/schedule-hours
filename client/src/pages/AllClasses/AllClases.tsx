@@ -1,51 +1,155 @@
 import { useEffect, useState } from "react";
 import fetchGetAllClasses from "../../utils/FetchGetAllClasses";
-import styles from './AllClases.module.css';
 import { IAllClasses, IViewClass } from "../../interfaces/props";
 import ViewClass from "../../components/ViewClass/ViewClass";
-
+import ViewAllClasses from "../../components/AllClassesView/AllClassesView";
+import Button from "../../components/Button/Button";
+import validateSesion from "../../utils/SesionValidator";
+import { useModal } from "../../utils/UseModal";
+import Modal from "../../components/Modal/Modal";
+import { useNavigate } from "react-router-dom";
 
 const AllClases = () => {
-    const [allClases, setAllClasses] = useState<IAllClasses[]>([]);
-    const [classSelected, setClassSelected] = useState<boolean>(false);
+    const [allClasses, setAllClasses] = useState<IAllClasses[]>([]);
     const [classData, setClassData] = useState<IViewClass>()
+    const [typeView, setTypeView] = useState('viewAll');
+    const {closeModal, isModalOpen, showModal} = useModal();
+    const [page, setPage] = useState<number>(1);
+    const [maxPage, setMaxPage] = useState<number>();
+    const navigate = useNavigate();
 
-    const handleViewClass = (id_class: any) => {
-        const [dataClass] = allClases.filter((cls) => cls.id_class === id_class);
+
+
+    const fetchGetCountClasses = async () => {
+        try{
+            const apiUrl = import.meta.env.VITE_BACKEND_URL;
+            const url = apiUrl + `/auth/api/all-counted-classes`;
+    
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+    
+            const result = await response.json();
+    
+            return result;
+    
+        } 
+        catch(err){
+            console.error('Error get all classes ' + err);
+            return {status: 500, message: 'Error ' + err};
+        }
+    }
+
+    
+    const handleViewDetailClass = async (id_class: any) => {
+
+        const statusSesion = await validateSesion();
+        
+        if(!statusSesion) {
+            showModal('errorSesion');
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            navigate('/login-user');
+            return
+        }
+
+        const [dataClass] = allClasses.filter((cls) => cls.id_class === id_class);
 
         if(!dataClass) {
             console.error('Class does not exist');
             return;
         }
         setClassData(dataClass);
-        setClassSelected(true);
+        setTypeView('viewDetail');
     }
 
     const handleViewReturnAllClasses = () => {
-        setClassSelected(false);
+        setTypeView('viewAll');
     }
+
+    const nextPage = () => setPage((prev) => prev + 1);
+    const prevPage = () => setPage((prev) => Math.max(prev - 1, 1));
+
 
     useEffect(() => {
         const handlerFetch = async () => {
-            const getClasses = await fetchGetAllClasses();
+            const getClasses = await fetchGetAllClasses(String(page), '3');
 
             setAllClasses(getClasses.data);
         };
 
         handlerFetch();
+    }, [page]);
+
+    useEffect(() => {
+        const handlerFetchCountClasses = async () => {
+            //Controll this please !IMPORTANT
+            const countClasses = await fetchGetCountClasses();
+            
+            if(countClasses){
+                const limitPerPage = 3;
+                const residue = countClasses.totalItems % limitPerPage;
+                const totalPages = countClasses.totalItems / limitPerPage;
+                
+                if (residue > 0) {
+                    setMaxPage(Math.floor(totalPages) + 1)
+                    return
+                } 
+    
+                setMaxPage(Math.floor(totalPages));
+                return
+            }
+
+            
+        };
+
+        handlerFetchCountClasses();
     }, []);
+    
+
 
     return(
-        <>  
+        <>
+
+            <Modal
+                id = 'errorSesion'
+                type = 'informative'
+                title = 'Sesion caducada'
+                paragraph = 'Redirigiendo al login..'
+                isOpen = {isModalOpen('errorSesion')}
+                classes = {['modal-infomative-grey']}
+                onClose = {closeModal}
+            />
+
             {
-                classSelected ? (
+                (typeView === 'viewAll') ? (
+                    <>
+                     <ViewAllClasses
+                        allClasses = {allClasses}
+                        handleViewClass = {handleViewDetailClass}
+                    />
+                    <button onClick={prevPage} disabled={page === 1}>Previous</button>
+                        <span> Page: {page} </span>
+                    <button onClick={nextPage} disabled={page === maxPage}>Next</button>
+                    </>
+                   
+
+                    
+                ) : (
                     <div>
-                        <div onClick={() => {
-                            handleViewReturnAllClasses();
-                        }}>
-                            pa atras
-                        </div>
-                            
+                        <Button
+                            id = 'goBackAllClasses'
+                            text = 'Volver'
+                            type = 'buttom'
+                            classes = {['clase']}
+                            onClick = {handleViewReturnAllClasses}
+                        />
+                
                         {
                             classData ? (
                                 <ViewClass
@@ -61,45 +165,14 @@ const AllClases = () => {
                             )
                         }
                     </div>
-                    
-                ) : (
-                    <div className = {styles.container} >
-                        <h1>Mi loco tas en todas las clases :U</h1>
-
-                        <div className = {styles.divitionGridClass + ' d-grid'}>
-                            {
-                                allClases && allClases.length > 0 ? (
-                                    allClases.map((element) => (
-                                        <div key={element.id_class}>
-                                            <p onClick={() => {
-                                                handleViewClass(element.id_class)
-                                            }}> Titulo: {element.class_name}</p>
-
-                                            <h3>Descripcion: {element.description}</h3>
-
-                                            <h2>status: {element.status_name}</h2>
-
-                                            <p>max: {element.max_number_member}</p>
-
-                                            <img src={element.photo} alt={element.class_name} className = {styles.imgClass} />
-                                            
-                                            
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p>No hay clases...</p>
-                                )
-                            }
-                        </div>
-                        
-                    </div>
                 )
             }
-            
-            
+
+
             
         </>
     )
+
 }
 
 export default AllClases;
