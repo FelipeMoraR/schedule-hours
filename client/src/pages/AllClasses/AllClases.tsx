@@ -8,6 +8,8 @@ import validateSesion from "../../utils/SesionValidator";
 import { useModal } from "../../utils/UseModal";
 import Modal from "../../components/Modal/Modal";
 import { useNavigate } from "react-router-dom";
+import fetchGetCountClasses from "../../utils/FetchGetCountClasses";
+
 
 const AllClases = () => {
     const [allClasses, setAllClasses] = useState<IAllClasses[]>([]);
@@ -16,33 +18,9 @@ const AllClases = () => {
     const {closeModal, isModalOpen, showModal} = useModal();
     const [page, setPage] = useState<number>(1);
     const [maxPage, setMaxPage] = useState<number>();
+    const [isLoadingGetClasses, setIsLoadingGetClasses] = useState<boolean>(true);
     const navigate = useNavigate();
 
-
-
-    const fetchGetCountClasses = async () => {
-        try{
-            const apiUrl = import.meta.env.VITE_BACKEND_URL;
-            const url = apiUrl + `/auth/api/all-counted-classes`;
-    
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-    
-            const result = await response.json();
-    
-            return result;
-    
-        } 
-        catch(err){
-            console.error('Error get all classes ' + err);
-            return {status: 500, message: 'Error ' + err};
-        }
-    }
 
     
     const handleViewDetailClass = async (id_class: any) => {
@@ -78,9 +56,11 @@ const AllClases = () => {
 
     useEffect(() => {
         const handlerFetch = async () => {
+            setIsLoadingGetClasses(true);
             const getClasses = await fetchGetAllClasses(String(page), '3');
 
             setAllClasses(getClasses.data);
+            setIsLoadingGetClasses(false);
         };
 
         handlerFetch();
@@ -91,27 +71,30 @@ const AllClases = () => {
             //Controll this please !IMPORTANT
             const countClasses = await fetchGetCountClasses();
             
-            if(countClasses){
-                const limitPerPage = 3;
-                const residue = countClasses.totalItems % limitPerPage;
-                const totalPages = countClasses.totalItems / limitPerPage;
+            if(!countClasses) return
+            const limitPerPage = 3;
+            const residue = countClasses.totalItems % limitPerPage;
+            const totalPages = countClasses.totalItems / limitPerPage;
                 
-                if (residue > 0) {
-                    setMaxPage(Math.floor(totalPages) + 1)
-                    return
-                } 
-    
-                setMaxPage(Math.floor(totalPages));
+            if (residue > 0) {
+                setMaxPage(Math.floor(totalPages) + 1)
                 return
-            }
-
+            } 
+    
+            setMaxPage(Math.floor(totalPages));
+            return
             
         };
 
         handlerFetchCountClasses();
     }, []);
-    
 
+    
+    if(isLoadingGetClasses){
+        return(
+            <h1>Mi loco estan cargando las clases</h1>
+        );
+    }
 
     return(
         <>

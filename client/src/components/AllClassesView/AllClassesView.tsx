@@ -1,9 +1,11 @@
 import styles from './AllClassesView.module.css';
 import { IViewAllClases } from '../../interfaces/props';
-
+import { useAuthContext } from '../../hooks/authContext';
 
 
 const ViewAllClasses = ({allClasses, handleViewClass} : IViewAllClases) => {
+    const { userData } = useAuthContext();
+    console.log(userData)
     return(
         <>
             <div className = {styles.container} >
@@ -24,7 +26,6 @@ const ViewAllClasses = ({allClasses, handleViewClass} : IViewAllClases) => {
                                             <p>max: {element.max_number_member}</p>
 
                                             <img src={element.photo} alt={element.class_name} className = {styles.imgClass} />
-                                            
                                             
                                         </div>
                                     ))

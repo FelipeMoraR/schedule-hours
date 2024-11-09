@@ -111,3 +111,8 @@ export interface IViewClass {
     photo: string;
     status_name: string;
 }
+
+export interface IViewAllClases{
+    allClasses: IAllClasses[],
+    handleViewClass: (id_class: any) => void
+}

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { registerUser, loginUser, logoutUser, midleWareVerifyToken, createTypeUser, cookieValidator, 
     removeCookie, refreshToken, insertTokenBlackList, getUserData, createStatusClass, createClass, resUploadCloudImg,
-    getAllCategoryClass, getAllClasses, getTotalCountClasses
+    getAllCategoryClass, getAllClasses, getTotalCountClasses, deleteClass
 
 } = require('../controller/controller')
 
@@ -25,7 +25,7 @@ router.post('/upload-image', midleWareVerifyToken, resUploadCloudImg);
 router.get('/all-category-class', midleWareVerifyToken, getAllCategoryClass);
 router.get('/all-classes', midleWareVerifyToken, getAllClasses);
 router.get('/all-counted-classes', midleWareVerifyToken, getTotalCountClasses);
-
+router.delete('/delete-class/:id', deleteClass);
 
 
 

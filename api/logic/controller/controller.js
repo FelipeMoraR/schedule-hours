@@ -673,6 +673,27 @@ const getAllCategoryClass = async (_, res) => {
     }
 };
 
+const deleteClass = async (req, res) => {
+    try{
+        const { id } = req.params;
+
+        const result = await db.sequelize.query('CALL DeleteClass(:id_class)', 
+            {
+                replacements: {
+                    id_class: parseInt(id) 
+                }
+            }
+        )
+
+        console.log('result delete => ', result);
+        return res.status(200).json({status: 200, message: '!Rows deleted'});
+    }
+    catch(err){
+        console.error('Error ' + err);
+        return res.status(500).json({status: 500, message: 'Something went wrong ' + err });
+    }
+}
+
 
 
 
@@ -693,5 +714,6 @@ module.exports = {
     resUploadCloudImg,
     getAllCategoryClass,
     getAllClasses,
-    getTotalCountClasses
+    getTotalCountClasses,
+    deleteClass
 }
