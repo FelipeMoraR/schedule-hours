@@ -3,12 +3,12 @@ import fetchGetAllClasses from "../../utils/FetchGetAllClasses";
 import { IAllClasses, IViewClass } from "../../interfaces/props";
 import ViewClass from "../../components/ViewClass/ViewClass";
 import ViewAllClasses from "../../components/AllClassesView/AllClassesView";
-import Button from "../../components/Button/Button";
 import validateSesion from "../../utils/SesionValidator";
 import { useModal } from "../../utils/UseModal";
 import Modal from "../../components/Modal/Modal";
 import { useNavigate } from "react-router-dom";
 import fetchGetCountClasses from "../../utils/FetchGetCountClasses";
+import { useAuthContext } from "../../hooks/authContext";
 
 
 const AllClases = () => {
@@ -17,12 +17,12 @@ const AllClases = () => {
     const [typeView, setTypeView] = useState('viewAll');
     const {closeModal, isModalOpen, showModal} = useModal();
     const [page, setPage] = useState<number>(1);
-    const [maxPage, setMaxPage] = useState<number>();
+    const [maxPage, setMaxPage] = useState<number>(1);
     const [isLoadingGetClasses, setIsLoadingGetClasses] = useState<boolean>(true);
     const navigate = useNavigate();
-
-
+    const {userData} = useAuthContext();
     
+
     const handleViewDetailClass = async (id_class: any) => {
 
         const statusSesion = await validateSesion();
@@ -42,7 +42,13 @@ const AllClases = () => {
             console.error('Class does not exist');
             return;
         }
-        setClassData(dataClass);
+
+        const objClassData = {
+            ...dataClass,
+            type_user: userData.id_type_user
+        }
+
+        setClassData(objClassData);
         setTypeView('viewDetail');
     }
 
@@ -68,26 +74,37 @@ const AllClases = () => {
 
     useEffect(() => {
         const handlerFetchCountClasses = async () => {
-            //Controll this please !IMPORTANT
             const countClasses = await fetchGetCountClasses();
             
-            if(!countClasses) return
+            if(!countClasses) return;
+
+            if(countClasses.status !== 200) return;
+
             const limitPerPage = 3;
             const residue = countClasses.totalItems % limitPerPage;
             const totalPages = countClasses.totalItems / limitPerPage;
-                
+            
             if (residue > 0) {
                 setMaxPage(Math.floor(totalPages) + 1)
                 return
             } 
     
             setMaxPage(Math.floor(totalPages));
+
             return
             
         };
 
-        handlerFetchCountClasses();
-    }, []);
+        if(!isLoadingGetClasses){
+            handlerFetchCountClasses();
+            return
+        }
+
+    
+    
+    }, [isLoadingGetClasses]);
+    
+
 
     
     if(isLoadingGetClasses){
@@ -98,7 +115,6 @@ const AllClases = () => {
 
     return(
         <>
-
             <Modal
                 id = 'errorSesion'
                 type = 'informative'
@@ -108,6 +124,7 @@ const AllClases = () => {
                 classes = {['modal-infomative-grey']}
                 onClose = {closeModal}
             />
+
 
             {
                 (typeView === 'viewAll') ? (
@@ -120,19 +137,8 @@ const AllClases = () => {
                         <span> Page: {page} </span>
                     <button onClick={nextPage} disabled={page === maxPage}>Next</button>
                     </>
-                   
-
-                    
                 ) : (
                     <div>
-                        <Button
-                            id = 'goBackAllClasses'
-                            text = 'Volver'
-                            type = 'buttom'
-                            classes = {['clase']}
-                            onClick = {handleViewReturnAllClasses}
-                        />
-                
                         {
                             classData ? (
                                 <ViewClass
@@ -142,6 +148,9 @@ const AllClases = () => {
                                     max_number_member = {classData.max_number_member}
                                     photo = {classData.photo}
                                     status_name = {classData.status_name}
+                                    type_user = {classData.type_user}
+                                    handleBack={handleViewReturnAllClasses}
+
                                 />
                             ) : (
                                 <h1>Error no se encontró la clase</h1>
@@ -150,12 +159,8 @@ const AllClases = () => {
                     </div>
                 )
             }
-
-
-            
         </>
     )
-
 }
 
 export default AllClases;

@@ -110,6 +110,8 @@ export interface IViewClass {
     max_number_member: number;
     photo: string;
     status_name: string;
+    type_user: number;
+    handleBack?: () => void;
 }
 
 export interface IViewAllClases{

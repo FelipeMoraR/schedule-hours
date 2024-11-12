@@ -1,11 +1,9 @@
 import styles from './AllClassesView.module.css';
 import { IViewAllClases } from '../../interfaces/props';
-import { useAuthContext } from '../../hooks/authContext';
 
 
 const ViewAllClasses = ({allClasses, handleViewClass} : IViewAllClases) => {
-    const { userData } = useAuthContext();
-    console.log(userData)
+
     return(
         <>
             <div className = {styles.container} >

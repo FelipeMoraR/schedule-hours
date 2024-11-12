@@ -2,13 +2,13 @@ import { useState } from "react";
 
 
 export function validateOnlyNumberLetters(value: string){
-    const regex = /^[a-zA-Z0-9]+$/;
+    const regex = /^[a-zA-Z0-9 ]+$/;
     const statusRegex = regex.test(value);
     return statusRegex
 }
 
 export function validateOnlyLetters(value: string){
-    const regex = /^[a-zA-Z]+$/;
+    const regex = /^[a-zA-Z ]+$/;
     const statusRegex = regex.test(value);
     return statusRegex
 }

@@ -605,26 +605,37 @@ const createClass = async (req, res) => {
 
 const getAllClasses = async (req, res) => {
     try{
-        const { page = 1, limit = 3 } = req.query;
+        const { page = 1, limit = 3 , filterBy, filterValue} = req.query;
         const offset = (page - 1) * limit;
 
-        const result = await db.sequelize.query(`
+        let query = `
                 SELECT 
-                    cl.id_class, 
-                    cl.name AS class_name, 
-                    cl.description, 
-                    cl.max_number_member, 
-                    cl.photo, 
-                    st.name AS status_name 
-                FROM CLASS cl 
-                INNER JOIN STATUS st ON cl.id_status = st.id_status 
-                ORDER BY cl.createdAt DESC 
-                LIMIT :limit OFFSET :offset`, 
-            {
-                replacements: {limit: parseInt(limit), offset: parseInt(offset)},
-                type: db.Sequelize.QueryTypes.SELECT
-            }
-        );
+			        c.id_class, 
+			        c.name AS class_name,
+                    c.description,
+                    c.max_number_member,
+                    c.photo,
+                    s.name AS status_name
+                    FROM CLASS_USER cl
+	                JOIN CLASS c ON c.id_class = cl.id_class
+                    JOIN STATUS s ON c.id_status = s.id_status
+                    `
+
+        const replacements = {};
+        if(filterBy && filterValue) {
+            query += ` WHERE ${filterBy} = :filterValue`;
+            replacements.filterValue = filterValue;
+        }
+
+        // Adding Limit and offset in a safe way
+        query += ` LIMIT :limit OFFSET :offset`;
+        replacements.limit = parseInt(limit);
+        replacements.offset = parseInt(offset);
+
+        const result = await db.sequelize.query(query, {
+            replacements,
+            type: db.Sequelize.QueryTypes.SELECT,
+        });
 
         if (!result) return res.status(404).json({status: 404, message: 'Classes not founded'});
 
@@ -677,7 +688,7 @@ const deleteClass = async (req, res) => {
     try{
         const { id } = req.params;
 
-        const result = await db.sequelize.query('CALL DeleteClass(:id_class)', 
+        const [result] = await db.sequelize.query('CALL DeleteClass(:id_class)', 
             {
                 replacements: {
                     id_class: parseInt(id) 
@@ -685,8 +696,9 @@ const deleteClass = async (req, res) => {
             }
         )
 
-        console.log('result delete => ', result);
-        return res.status(200).json({status: 200, message: '!Rows deleted'});
+        if(!result) return res.status(500).json({status: 500, message: 'Something went wront, no data returned'});
+
+        return res.status(200).json({status: 200, message: result['Total rows deleted'] + ' Rows deleted'});
     }
     catch(err){
         console.error('Error ' + err);
