@@ -111,6 +111,8 @@ export interface IClass {
     photo: string;
     status_name: string;
     type_user: number;
+    deleteClass? : (id_class: number) => void;
+    modifyClass? : (id_class: number) => void;
 }
 
 export interface IViewClass {
@@ -123,14 +125,16 @@ export interface IViewClass {
     type_user: number;
     isEditable: boolean;
     handleBack?: () => void;
+    deleteClass? : (id_class: number) => void;
+    modifyClass? : (id_class: number) => void;
 }
 
 export interface IViewAllClases{
     allClasses: IAllClasses[],
-    typeView: number;
+    type_user: number;
     isEditable: boolean;
     handleViewClass?: (id_class: any) => void
-    deleteClass? : (id_class: number) => any;
+    deleteClass? : (id_class: number) => void;
 }
 
 export interface INavBarBtn{

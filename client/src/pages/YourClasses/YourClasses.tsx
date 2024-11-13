@@ -17,7 +17,7 @@ const YourClasses = () => {
     const [page, setPage] = useState<number>(1);
     const [maxPage, setMaxPage] = useState<number>(1);
     const [allClasses, setAllClasses] = useState<IAllClasses[]>([]);
-    const [classData, setClassData] = useState<IClass>()
+    const [classData, setClassData] = useState<IClass>();
     const [typeView, setTypeView] = useState('viewAll');
     const {userData} = useAuthContext();
     const {closeModal, isModalOpen, showModal} = useModal();
@@ -68,12 +68,16 @@ const YourClasses = () => {
             return 
         }
 
-        console.log('Class deleted');
         await handlerFetchGetClasses();
         closeModal();
         
         return
     }  
+
+    const handleModifyClass = async (id_class: number) => {
+        console.log('Activao', id_class);
+        return
+    }
 
     const handlerFetchGetClasses = async () => {
         setIsLoadingGetClasses(true);
@@ -135,8 +139,10 @@ const YourClasses = () => {
                                     photo = {classData.photo}
                                     status_name = {classData.status_name}
                                     type_user = {classData.type_user}
-                                    handleBack={handleViewReturnAllClasses}
-                                    isEditable = {false}
+                                    handleBack = {handleViewReturnAllClasses}
+                                    isEditable = {true}
+                                    deleteClass = {handleDeleteClass}
+                                    modifyClass = {handleModifyClass}
                                 />
                             ) : (
                                 <h1>Error no se encontró la clase</h1>
@@ -149,28 +155,28 @@ const YourClasses = () => {
 
     return (
         <>
-                Tus clases 
-                <Modal
-                    id = 'loadingDeleteClass'
-                    type = 'loader'
-                    title = 'Loading'
-                    isOpen = {isModalOpen('loadingDeleteClass')}
-                    classes = {['modal-infomative-grey']}
-                    onClose = {closeModal}
-                /> 
+            <h1>Tus clases</h1>
+            <Modal
+                id = 'loadingDeleteClass'
+                type = 'loader'
+                title = 'Loading'
+                isOpen = {isModalOpen('loadingDeleteClass')}
+                classes = {['modal-infomative-grey']}
+                onClose = {closeModal}
+            /> 
 
-                <ViewAllClasses
-                    allClasses = {allClasses}
-                    typeView = {userData.id_type_user}
-                    isEditable = {true}
-                    deleteClass = {handleDeleteClass}
-                    handleViewClass={handleViewDetailClass}
-                />
+            <ViewAllClasses
+                allClasses = {allClasses}
+                type_user = {userData.id_type_user}
+                isEditable = {true}
+                deleteClass = {handleDeleteClass}
+                handleViewClass = {handleViewDetailClass}
+            />
 
-                <button onClick={prevPage} disabled={page === 1}>Previous</button>
-                        <span> Page: {page} </span>
-                <button onClick={nextPage} disabled={page === maxPage}>Next</button>
-                </>
+            <button onClick={prevPage} disabled={page === 1}>Previous</button>
+                    <span> Page: {page} </span>
+            <button onClick={nextPage} disabled={page === maxPage}>Next</button>
+        </>
     )
 } 
 

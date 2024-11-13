@@ -3,13 +3,10 @@ import { IViewAllClases } from '../../interfaces/props';
 import Button from '../Button/Button';
 
 
-const ViewAllClasses = ({allClasses, typeView, isEditable, handleViewClass, deleteClass} : IViewAllClases) => {
-    
+const ViewAllClasses = ({allClasses, type_user, isEditable, handleViewClass, deleteClass} : IViewAllClases) => {
     return(
         <>
             <div className = {styles.container} >
-                        <h1>Mi loco tas en todas las clases :U</h1>
-
                         <div className = {styles.divitionGridClass + ' d-grid'}>
                             {
                                 allClasses && allClasses.length > 0 ? (
@@ -34,7 +31,7 @@ const ViewAllClasses = ({allClasses, typeView, isEditable, handleViewClass, dele
                                             <img src={element.photo} alt={element.class_name} className = {styles.imgClass} />
 
                                             {
-                                                typeView != 2 && isEditable && deleteClass ? (
+                                                type_user != 2 && isEditable && deleteClass && handleViewClass ? (
                                                     <div>
                                                         <Button
                                                             id = 'deleteClass'
@@ -43,18 +40,6 @@ const ViewAllClasses = ({allClasses, typeView, isEditable, handleViewClass, dele
                                                             classes = {['btn-delete']}
                                                             onClick = {() => {
                                                                 deleteClass(element.id_class);
-                                                            }}
-                                                        />
-
-                                                        <Button
-                                                            id = 'modifyClass'
-                                                            text = 'Modificar clase'
-                                                            type = 'buttom'
-                                                            classes = {['btn-modify']}
-                                                            onClick = {() => {
-                                                                handleViewClass ? (
-                                                                    handleViewClass(element.id_class)
-                                                                ) : null
                                                             }}
                                                         />
                                                     </div>

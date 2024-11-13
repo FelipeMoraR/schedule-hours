@@ -91,10 +91,8 @@ const AllClases = () => {
 
 
     useEffect(() => {
-
         handlerFetchGetAllClasses();
         handlerFetchCountClasses();
-
     }, [page]);
 
 
@@ -105,8 +103,36 @@ const AllClases = () => {
         );
     }
 
+
+    if(typeView == 'viewDetail') {
+        return(
+            <> 
+                {
+                    classData ? (
+                        <ViewClass
+                            id_class = {classData.id_class}
+                            class_name = {classData.class_name}
+                            description = {classData.description}
+                            max_number_member = {classData.max_number_member}
+                            photo = {classData.photo}
+                            status_name = {classData.status_name}
+                            type_user = {classData.type_user}
+                            handleBack={handleViewReturnAllClasses}
+                            isEditable = {false}
+                        />
+                    ) : (
+                        <h1>Error no se encontró la clase</h1>
+                    )
+                }
+            </>
+        )
+    }
+
     return(
         <>
+
+            <h1>Todas las clases</h1>
+            
             <Modal
                 id = 'errorSesion'
                 type = 'informative'
@@ -117,43 +143,16 @@ const AllClases = () => {
                 onClose = {closeModal}
             />
 
+            <ViewAllClasses
+                allClasses = {allClasses}
+                handleViewClass = {handleViewDetailClass}
+                type_user = {userData.id_type_user}
+                isEditable = {false}
+            />
 
-            {
-                (typeView === 'viewAll') ? (
-                    <>
-                     <ViewAllClasses
-                        allClasses = {allClasses}
-                        handleViewClass = {handleViewDetailClass}
-                        typeView = {userData.id_type_user}
-                        isEditable = {false}
-                    />
-                    <button onClick={prevPage} disabled={page === 1}>Previous</button>
-                        <span> Page: {page} </span>
-                    <button onClick={nextPage} disabled={page === maxPage}>Next</button>
-                    </>
-                ) : (
-                    <> 
-                        {
-                            classData ? (
-                                <ViewClass
-                                    id_class = {classData.id_class}
-                                    class_name = {classData.class_name}
-                                    description = {classData.description}
-                                    max_number_member = {classData.max_number_member}
-                                    photo = {classData.photo}
-                                    status_name = {classData.status_name}
-                                    type_user = {classData.type_user}
-                                    handleBack={handleViewReturnAllClasses}
-                                    isEditable = {false}
-                                />
-                            ) : (
-                                <h1>Error no se encontró la clase</h1>
-                            )
-                        }
-                    </>
-                   
-                )
-            }
+            <button onClick={prevPage} disabled={page === 1}>Previous</button>
+                <span> Page: {page} </span>
+            <button onClick={nextPage} disabled={page === maxPage}>Next</button>            
         </>
     )
 }
