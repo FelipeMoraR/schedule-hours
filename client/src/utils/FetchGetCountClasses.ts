@@ -1,7 +1,8 @@
-const fetchGetCountClasses = async () => {
+const fetchGetCountClasses = async (idUser : string = '') => {
     try{
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
-        const url = apiUrl + `/auth/api/all-counted-classes`;
+        
+        const url = apiUrl + `/auth/api/all-counted-classes?idUser=${idUser}`;
 
         const response = await fetch(url, {
             method: 'GET',

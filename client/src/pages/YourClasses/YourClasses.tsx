@@ -1,30 +1,30 @@
 import { useEffect, useState } from "react";
 import fetchGetAllClasses from "../../utils/FetchGetAllClasses";
 import { IAllClasses, IClass } from "../../interfaces/props";
-import ViewClass from "../../components/ViewClass/ViewClass";
 import ViewAllClasses from "../../components/AllClassesView/AllClassesView";
-import validateSesion from "../../utils/SesionValidator";
-import { useModal } from "../../utils/UseModal";
-import Modal from "../../components/Modal/Modal";
-import { useNavigate } from "react-router-dom";
 import fetchGetCountClasses from "../../utils/FetchGetCountClasses";
 import { useAuthContext } from "../../hooks/authContext";
+import fetchDeleteClass from '../../utils/FetchDeleteClass';
+import Modal from "../../components/Modal/Modal";
+import { useModal } from "../../utils/UseModal";
+import validateSesion from "../../utils/SesionValidator";
+import { useNavigate } from "react-router-dom";
+import ViewClass from "../../components/ViewClass/ViewClass";
 
 
-const AllClases = () => {
+const YourClasses = () => {
+    const [isLoadingGetClasses, setIsLoadingGetClasses] = useState<boolean>(true);
+    const [page, setPage] = useState<number>(1);
+    const [maxPage, setMaxPage] = useState<number>(1);
     const [allClasses, setAllClasses] = useState<IAllClasses[]>([]);
     const [classData, setClassData] = useState<IClass>()
     const [typeView, setTypeView] = useState('viewAll');
-    const {closeModal, isModalOpen, showModal} = useModal();
-    const [page, setPage] = useState<number>(1);
-    const [maxPage, setMaxPage] = useState<number>(1);
-    const [isLoadingGetClasses, setIsLoadingGetClasses] = useState<boolean>(true);
-    const navigate = useNavigate();
     const {userData} = useAuthContext();
+    const {closeModal, isModalOpen, showModal} = useModal();
+    const navigate = useNavigate();
     
-
+    
     const handleViewDetailClass = async (id_class: any) => {
-
         const statusSesion = await validateSesion();
         
         if(!statusSesion) {
@@ -56,16 +56,35 @@ const AllClases = () => {
         setTypeView('viewAll');
     }
 
-    const handlerFetchGetAllClasses = async () => {
+    const handleDeleteClass = async  (id_class: number) => {
+        showModal('loadingDeleteClass');
+        const idClass = id_class.toString();
+        
+        const statusResponse = await fetchDeleteClass(idClass);
+
+        if(!statusResponse){
+            console.error('Error trying to remove the class');
+            closeModal();
+            return 
+        }
+
+        console.log('Class deleted');
+        await handlerFetchGetClasses();
+        closeModal();
+        
+        return
+    }  
+
+    const handlerFetchGetClasses = async () => {
         setIsLoadingGetClasses(true);
-        const getClasses = await fetchGetAllClasses(String(page), '3');
+        const getClasses = await fetchGetAllClasses(String(page), '3', userData.id_user);
 
         setAllClasses(getClasses.data);
         setIsLoadingGetClasses(false);
     };
 
     const handlerFetchCountClasses = async () => {
-        const countClasses = await fetchGetCountClasses();
+        const countClasses = await fetchGetCountClasses(userData.id_user);
         
         if(!countClasses) return;
 
@@ -87,52 +106,25 @@ const AllClases = () => {
     };
 
     const nextPage = () => setPage((prev) => prev + 1);
-    const prevPage = () => setPage((prev) => Math.max(prev - 1, 1));
-
+    const prevPage = () => setPage((prev) => Math.max(prev - 1, 1)); // Math.max(prev - 1, 1) enshure prev never will be less than 0
 
     useEffect(() => {
-
-        handlerFetchGetAllClasses();
+        handlerFetchGetClasses();
         handlerFetchCountClasses();
-
     }, [page]);
 
-
     
+
     if(isLoadingGetClasses){
         return(
             <h1>Cargando clases!</h1>
-        );
+        )
     }
 
-    return(
-        <>
-            <Modal
-                id = 'errorSesion'
-                type = 'informative'
-                title = 'Sesion caducada'
-                paragraph = 'Redirigiendo al login..'
-                isOpen = {isModalOpen('errorSesion')}
-                classes = {['modal-infomative-grey']}
-                onClose = {closeModal}
-            />
 
-
-            {
-                (typeView === 'viewAll') ? (
-                    <>
-                     <ViewAllClasses
-                        allClasses = {allClasses}
-                        handleViewClass = {handleViewDetailClass}
-                        typeView = {userData.id_type_user}
-                        isEditable = {false}
-                    />
-                    <button onClick={prevPage} disabled={page === 1}>Previous</button>
-                        <span> Page: {page} </span>
-                    <button onClick={nextPage} disabled={page === maxPage}>Next</button>
-                    </>
-                ) : (
-                    <> 
+    if(typeView == 'viewDetail') {
+        return(
+            <> 
                         {
                             classData ? (
                                 <ViewClass
@@ -151,11 +143,35 @@ const AllClases = () => {
                             )
                         }
                     </>
-                   
-                )
-            }
-        </>
-    )
-}
+        )
+    }
 
-export default AllClases;
+
+    return (
+        <>
+                Tus clases 
+                <Modal
+                    id = 'loadingDeleteClass'
+                    type = 'loader'
+                    title = 'Loading'
+                    isOpen = {isModalOpen('loadingDeleteClass')}
+                    classes = {['modal-infomative-grey']}
+                    onClose = {closeModal}
+                /> 
+
+                <ViewAllClasses
+                    allClasses = {allClasses}
+                    typeView = {userData.id_type_user}
+                    isEditable = {true}
+                    deleteClass = {handleDeleteClass}
+                    handleViewClass={handleViewDetailClass}
+                />
+
+                <button onClick={prevPage} disabled={page === 1}>Previous</button>
+                        <span> Page: {page} </span>
+                <button onClick={nextPage} disabled={page === maxPage}>Next</button>
+                </>
+    )
+} 
+
+export default YourClasses;

@@ -4,7 +4,7 @@ import Button from "../Button/Button";
 
 
 
-const ViewClass = ({id_class, class_name, description, max_number_member, photo, status_name, type_user, handleBack} : IViewClass) => {
+const ViewClass = ({id_class, class_name, description, max_number_member, photo, status_name, type_user, isEditable, handleBack} : IViewClass) => {
 
     return(
         <>
@@ -36,6 +36,15 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
             {
                 type_user == 2 ? (
                     <button>Unirse jeje</button>
+                ) : null
+            }
+
+            {
+                type_user != 2 && isEditable ? (
+                    <div>
+                        <button>XDDDD TEDELETEO</button>
+                        <button>Te modifico XD</button>
+                    </div>
                 ) : null
             }
         </>

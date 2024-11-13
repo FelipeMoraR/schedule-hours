@@ -1,7 +1,7 @@
-const fetchGetAllClasses = async (page: string, limit: string) => {
+const fetchGetAllClasses = async (page: string, limit: string, idUser: string = '') => {
     try{
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
-        const url = apiUrl + `/auth/api/all-classes?page=${page}&limit=${limit}`;
+        const url = apiUrl + `/auth/api/all-classes?page=${page}&limit=${limit}&idUser=${idUser}`;
 
         const response = await fetch(url, {
             method: 'GET',

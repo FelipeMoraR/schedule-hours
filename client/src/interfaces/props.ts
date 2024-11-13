@@ -103,6 +103,16 @@ export interface IAllClasses {
 }
 
 
+export interface IClass {
+    id_class: number;
+    class_name: string;
+    description: string;
+    max_number_member: number;
+    photo: string;
+    status_name: string;
+    type_user: number;
+}
+
 export interface IViewClass {
     id_class: number;
     class_name: string;
@@ -111,10 +121,21 @@ export interface IViewClass {
     photo: string;
     status_name: string;
     type_user: number;
+    isEditable: boolean;
     handleBack?: () => void;
 }
 
 export interface IViewAllClases{
     allClasses: IAllClasses[],
-    handleViewClass: (id_class: any) => void
+    typeView: number;
+    isEditable: boolean;
+    handleViewClass?: (id_class: any) => void
+    deleteClass? : (id_class: number) => any;
+}
+
+export interface INavBarBtn{
+    isAuthenticated: boolean;
+    handleButton: (event: React.MouseEvent<HTMLButtonElement>) => void;
+    logout?: () => void;
+    typeUser?: number;
 }

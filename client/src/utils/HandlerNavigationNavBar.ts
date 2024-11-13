@@ -20,6 +20,9 @@ function handlerNavigationNavBar(id:string, navigate: (path: string) => void) {
         case 'allClasses':
             navigate('/all-classes');
             return
+        case 'yourClasses':
+            navigate('/your-classes');
+            return
         default:
             navigate('/');
             return;

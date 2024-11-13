@@ -280,6 +280,12 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         )
     }
 
+    if(isAuthenticated && !userData){
+        return(
+            <h1>Loading user data...</h1>
+        )
+    }
+
     return (
         <AuthContext.Provider value={value}>
             {children}

@@ -605,7 +605,18 @@ const createClass = async (req, res) => {
 
 const getAllClasses = async (req, res) => {
     try{
-        const { page = 1, limit = 3 , filterBy, filterValue} = req.query;
+        let { page = 1, limit = 3 , idUser} = req.query;
+        
+        if(!page){
+            console.log('No page, setting default page');
+            page = 1;
+        }
+
+        if(!limit){
+            console.log('No limit, setting default limit');
+            limit = 3;
+        }
+
         const offset = (page - 1) * limit;
 
         let query = `
@@ -616,19 +627,19 @@ const getAllClasses = async (req, res) => {
                     c.max_number_member,
                     c.photo,
                     s.name AS status_name
-                    FROM CLASS_USER cl
-	                JOIN CLASS c ON c.id_class = cl.id_class
+                    FROM CLASS c 
+	                JOIN CLASS_USER cu ON c.id_class = cu.id_class
                     JOIN STATUS s ON c.id_status = s.id_status
                     `
 
         const replacements = {};
-        if(filterBy && filterValue) {
-            query += ` WHERE ${filterBy} = :filterValue`;
-            replacements.filterValue = filterValue;
+        if(idUser) {
+            query += `WHERE cu.id_user = :idUser `;
+            replacements.idUser = parseInt(idUser);
         }
 
         // Adding Limit and offset in a safe way
-        query += ` LIMIT :limit OFFSET :offset`;
+        query += ` GROUP BY c.id_class LIMIT :limit OFFSET :offset`;
         replacements.limit = parseInt(limit);
         replacements.offset = parseInt(offset);
 
@@ -636,9 +647,9 @@ const getAllClasses = async (req, res) => {
             replacements,
             type: db.Sequelize.QueryTypes.SELECT,
         });
-
-        if (!result) return res.status(404).json({status: 404, message: 'Classes not founded'});
-
+        
+        if (result.length == 0) return res.status(404).json({status: 404, message: 'Classes not founded'});
+        
         return res.status(200).json({status: 200, message: 'Success', data: result});
     }
     catch(err){
@@ -647,14 +658,42 @@ const getAllClasses = async (req, res) => {
     }
 };
 
-const getTotalCountClasses = async (_, res) => {
+const getTotalCountClasses = async (req, res) => {
     try{
-        const totalItemsResult = await db.sequelize.query(
-            `SELECT COUNT(*) AS totalItems FROM CLASS`,
-            { type: db.Sequelize.QueryTypes.SELECT }
+        const { idUser } = req.query;
+
+        let query = `
+            WITH TMPCLASS AS (
+	            SELECT 
+		            c.name AS class_name,
+                    c.id_class,
+                    cu.id_user,
+                    ROW_NUMBER() OVER (PARTITION BY c.id_class ORDER BY c.id_class) AS row_num
+	            FROM 
+		            CLASS c 
+	            JOIN 
+		            CLASS_USER cu ON c.id_class = cu.id_class
+            )
+
+            SELECT COUNT(*) AS totalItems
+            FROM TMPCLASS
+        `
+        const replacements = {};
+        if(idUser) {
+            query += `WHERE row_num = 1 AND id_user = :idUser `
+            replacements.idUser = parseInt(idUser);
+        }
+        else {
+            query += `WHERE row_num = 1`
+        } 
+
+        const totalItemsResult = await db.sequelize.query(query, { 
+                replacements,
+                type: db.Sequelize.QueryTypes.SELECT 
+            }
         );
         const totalItems = totalItemsResult[0].totalItems;
-    
+        
         if(!totalItems) return res.status(404).json({status: 404, message: 'No count'});
     
         return res.status(200).json({status: 200, totalItems: totalItems});
