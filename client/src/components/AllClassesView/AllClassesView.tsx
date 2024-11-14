@@ -23,12 +23,25 @@ const ViewAllClasses = ({allClasses, type_user, isEditable, handleViewClass, del
                                                 )
                                             }
                                             
-
+                                            
                                             <h2>status: {element.status_name}</h2>
 
                                             <p>max: {element.max_number_member}</p>
 
                                             <img src={element.photo} alt={element.class_name} className = {styles.imgClass} />
+                                            
+
+                                            {
+                                                element.categories && element.categories.length > 0 ? (
+                                                    element.categories.map((cat) => (
+                                                        <div key={cat.id_category}>
+                                                            {cat.id_category} - {cat.category_name}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <p>No categories available</p> // Para el caso en que no haya categorías
+                                                )
+                                            }
 
                                             {
                                                 type_user != 2 && isEditable && deleteClass && handleViewClass ? (
@@ -47,9 +60,7 @@ const ViewAllClasses = ({allClasses, type_user, isEditable, handleViewClass, del
                                             }
                                         </div>
                                     ))
-                                ) : (
-                                    <p>No hay clases...</p>
-                                )
+                                ) : null
                             }
                         </div>
                         

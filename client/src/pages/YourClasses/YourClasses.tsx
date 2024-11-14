@@ -80,11 +80,10 @@ const YourClasses = () => {
     }
 
     const handlerFetchGetClasses = async () => {
-        setIsLoadingGetClasses(true);
         const getClasses = await fetchGetAllClasses(String(page), '3', userData.id_user);
-
+        
         setAllClasses(getClasses.data);
-        setIsLoadingGetClasses(false);
+        
     };
 
     const handlerFetchCountClasses = async () => {
@@ -109,22 +108,33 @@ const YourClasses = () => {
         
     };
 
-    const nextPage = () => setPage((prev) => prev + 1);
-    const prevPage = () => setPage((prev) => Math.max(prev - 1, 1)); // Math.max(prev - 1, 1) enshure prev never will be less than 0
+    const nextPage = () => {
+        setAllClasses([]); //With this we controll the flow of classes data, whit out it we pass to the next page with the old information.
+        setPage((prev) => prev + 1)
+    };
+    const prevPage = () => {
+        setAllClasses([]); //Beside this mantain the page when we re-render some components.
+        setPage((prev) => Math.max(prev - 1, 1))
+    }; // Math.max(prev - 1, 1) enshure prev never will be less than 0
 
     useEffect(() => {
-        handlerFetchGetClasses();
-        handlerFetchCountClasses();
+        const handlerFunctionFetchs = async () => {
+            setIsLoadingGetClasses(true);
+            await handlerFetchGetClasses();
+            await handlerFetchCountClasses();
+            setIsLoadingGetClasses(false);
+        }
+        
+        handlerFunctionFetchs();
     }, [page]);
 
-    
 
     if(isLoadingGetClasses){
         return(
             <h1>Cargando clases!</h1>
         )
     }
-
+    
 
     if(typeView == 'viewDetail') {
         return(
@@ -143,6 +153,7 @@ const YourClasses = () => {
                                     isEditable = {true}
                                     deleteClass = {handleDeleteClass}
                                     modifyClass = {handleModifyClass}
+                                    categories = {classData.categories}
                                 />
                             ) : (
                                 <h1>Error no se encontró la clase</h1>

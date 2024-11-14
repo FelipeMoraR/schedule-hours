@@ -93,6 +93,11 @@ export interface IAllCategoryClass {
     name: string;
 }
 
+export interface ICategoryClass {
+    id_category: number;
+    category_name: string;
+}
+
 export interface IAllClasses { 
     id_class: number;
     class_name: string;
@@ -100,6 +105,7 @@ export interface IAllClasses {
     max_number_member: number;
     photo: string;
     status_name: string;
+    categories: Array<ICategoryClass>
 }
 
 
@@ -111,6 +117,7 @@ export interface IClass {
     photo: string;
     status_name: string;
     type_user: number;
+    categories: Array<ICategoryClass>
     deleteClass? : (id_class: number) => void;
     modifyClass? : (id_class: number) => void;
 }
@@ -124,6 +131,7 @@ export interface IViewClass {
     status_name: string;
     type_user: number;
     isEditable: boolean;
+    categories: Array<ICategoryClass>
     handleBack?: () => void;
     deleteClass? : (id_class: number) => void;
     modifyClass? : (id_class: number) => void;

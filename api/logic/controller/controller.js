@@ -603,6 +603,49 @@ const createClass = async (req, res) => {
     }    
 }   
 
+
+const getClassCategory = async (classes) => {
+        let classesWithCategories = []; 
+
+        try{
+            await Promise.all( //This execute the code in parallel
+                classes.map(async (cls) => {
+                    try{
+                        const query = `
+                            SELECT 	ct.id_category,
+                                    ct.name AS category_name
+                            FROM CLASS c
+                            JOIN CLASS_CATEGORY cc ON cc.id_class = c.id_class
+                            JOIN CATEGORY ct ON ct.id_category = cc.id_category
+                            WHERE c.id_class = :id_class;
+                        `
+                        let categoriesPerClass = await db.sequelize.query(query, {
+                            replacements: {
+                                id_class: cls.id_class
+                            },
+                            type: db.Sequelize.QueryTypes.SELECT
+                        });
+    
+                        let classFiltred =  classes.filter(el => el.id_class == cls.id_class)[0]
+                        classFiltred['categories'] = categoriesPerClass;
+                    
+                        classesWithCategories.push(classFiltred);
+                    } catch (err) {
+                        throw new Error('Failed to fetch category for class'); //This interrupt the parallel execution.
+                    }
+                })
+            );
+        } catch(err){
+            console.error('Error extracting class category ' + err);
+            return false
+        }
+        
+
+
+        return classesWithCategories;
+}
+
+
 const getAllClasses = async (req, res) => {
     try{
         let { page = 1, limit = 3 , idUser} = req.query;
@@ -643,14 +686,20 @@ const getAllClasses = async (req, res) => {
         replacements.limit = parseInt(limit);
         replacements.offset = parseInt(offset);
 
-        const result = await db.sequelize.query(query, {
+        const classes = await db.sequelize.query(query, {
             replacements,
             type: db.Sequelize.QueryTypes.SELECT,
         });
         
-        if (result.length == 0) return res.status(404).json({status: 404, message: 'Classes not founded'});
+        if (classes.length == 0) return res.status(404).json({status: 404, message: 'Classes not founded'});
+
+        const listClasses = await getClassCategory(classes);
         
-        return res.status(200).json({status: 200, message: 'Success', data: result});
+        if(!listClasses) return res.status(500).json({status: 500, message: 'Error extracting classes categories'});
+
+        console.log('Nueva lista de clases', listClasses);
+
+        return res.status(200).json({status: 200, message: 'Success', data: listClasses});
     }
     catch(err){
         console.error('Something went wrong ' + err);

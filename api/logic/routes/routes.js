@@ -23,8 +23,8 @@ router.post('/insert-status-class', midleWareVerifyToken, createStatusClass);
 router.post('/create-class', midleWareVerifyToken, createClass);
 router.post('/upload-image', midleWareVerifyToken, resUploadCloudImg);
 router.get('/all-category-class', midleWareVerifyToken, getAllCategoryClass);
-router.get('/all-classes', getAllClasses);
-router.get('/all-counted-classes', getTotalCountClasses);
+router.get('/all-classes', midleWareVerifyToken, getAllClasses);
+router.get('/all-counted-classes', midleWareVerifyToken, getTotalCountClasses);
 router.delete('/delete-class/:id', midleWareVerifyToken, deleteClass);
 
 

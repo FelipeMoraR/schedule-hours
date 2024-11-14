@@ -59,7 +59,7 @@ const AllClases = () => {
     const handlerFetchGetAllClasses = async () => {
         setIsLoadingGetClasses(true);
         const getClasses = await fetchGetAllClasses(String(page), '3');
-
+        
         setAllClasses(getClasses.data);
         setIsLoadingGetClasses(false);
     };
@@ -86,8 +86,14 @@ const AllClases = () => {
         
     };
 
-    const nextPage = () => setPage((prev) => prev + 1);
-    const prevPage = () => setPage((prev) => Math.max(prev - 1, 1));
+    const nextPage = () => {
+        setAllClasses([]); //With this we controll the flow of classes data, whit out it we pass to the next page with the old information.
+        setPage((prev) => prev + 1)
+    };
+    const prevPage = () => {
+        setAllClasses([]); //Beside this mantain the page when we re-render some components.
+        setPage((prev) => Math.max(prev - 1, 1))
+    }; // Math.max(prev - 1, 1) enshure prev never will be less than 0
 
 
     useEffect(() => {
@@ -119,6 +125,7 @@ const AllClases = () => {
                             type_user = {classData.type_user}
                             handleBack={handleViewReturnAllClasses}
                             isEditable = {false}
+                            categories = {classData.categories}
                         />
                     ) : (
                         <h1>Error no se encontró la clase</h1>

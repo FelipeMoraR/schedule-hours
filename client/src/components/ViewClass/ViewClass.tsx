@@ -6,7 +6,7 @@ import ClassNotEditable from "./ClassNotEditable";
 
 
 
-const ViewClass = ({id_class, class_name, description, max_number_member, photo, status_name, type_user, isEditable, handleBack, deleteClass, modifyClass} : IViewClass) => {
+const ViewClass = ({id_class, class_name, description, max_number_member, photo, status_name, type_user, isEditable, categories, handleBack, deleteClass, modifyClass} : IViewClass) => {
     
     if(!isEditable){
         return(
@@ -27,6 +27,7 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                     photo = {photo}
                     status_name = {status_name}
                     type_user = {type_user}
+                    categories = {categories}
                 />
             </>
         )
@@ -52,6 +53,7 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                 type_user = {type_user}
                 deleteClass = {deleteClass}
                 modifyClass = {modifyClass}
+                categories = {categories}
             />
         </>
     )
