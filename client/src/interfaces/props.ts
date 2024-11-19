@@ -1,4 +1,3 @@
-import React from "react";
 
 export interface IAuthContextType {
     errorLoged: string;
@@ -50,6 +49,7 @@ export interface IInputFieldProps {
     minLength?: number;
     defaultValue?: string;
     classes: Array<string>;
+    checked?: boolean;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void; //This allow the access to the event property.
     //onChange is a property of react that waits a fuction to handle the change event.
     //React.ChangeEvent this is an interface that describes a change event. 
@@ -79,6 +79,7 @@ export interface ITextArea {
     id: string;
     name: string;
     label: string;
+    value?: string;
     placeholder?: string;
     maxlength?: number;
     rows: number;
@@ -95,7 +96,12 @@ export interface IAllCategoryClass {
 
 export interface ICategoryClass {
     id_category: number;
-    category_name: string;
+    name: string;
+}
+
+export interface IStatusClass {
+    id_status: number;
+    name: string;
 }
 
 export interface IAllClasses { 
@@ -117,9 +123,10 @@ export interface IClass {
     photo: string;
     status_name: string;
     type_user: number;
-    categories: Array<ICategoryClass>
+    categories: Array<ICategoryClass>;
+    allCategories?: Array<ICategoryClass>;
+    allStatus? : Array<IStatusClass>;
     deleteClass? : (id_class: number) => void;
-    modifyClass? : (id_class: number) => void;
 }
 
 export interface IViewClass {
@@ -131,10 +138,11 @@ export interface IViewClass {
     status_name: string;
     type_user: number;
     isEditable: boolean;
-    categories: Array<ICategoryClass>
+    categories: Array<ICategoryClass>;
+    allCategories?: Array<ICategoryClass>;
+    allStatus? : Array<IStatusClass>;
     handleBack?: () => void;
     deleteClass? : (id_class: number) => void;
-    modifyClass? : (id_class: number) => void;
 }
 
 export interface IViewAllClases{
@@ -150,4 +158,19 @@ export interface INavBarBtn{
     handleButton: (event: React.MouseEvent<HTMLButtonElement>) => void;
     logout?: () => void;
     typeUser?: number;
+}
+
+export interface IOptionSelect {
+    value: string;
+    name: string;
+}
+
+export interface ISelect<T> { //<T> Allow any type of obj
+    id: string;
+    name: string;
+    values: T[];
+    keyValue: keyof T;
+    keyName: keyof T;
+    selectedValue?: string | number;  // DefaultValue
+    onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }

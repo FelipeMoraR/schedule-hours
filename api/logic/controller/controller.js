@@ -771,7 +771,29 @@ const getAllCategoryClass = async (_, res) => {
     }
 };
 
+
+const getAllStatusClass = async (_, res) => {
+    try{
+        const result = await db.sequelize.query('SELECT id_status, name FROM status;', 
+            {
+                type: db.Sequelize.QueryTypes.SELECT
+            }
+        )
+
+        if(!result) return res.status(204).json({status: 204, message: 'No results in the petition'});
+
+        return res.status(200).json({status: 200, data: result});
+    } 
+    catch(err){
+        console.log('Something went wrong ' + err);
+        return res.status(500).json({status: 500, message: 'Error: ' + err});
+    }
+};
+
 const deleteClass = async (req, res) => {
+
+    const transaction = await db.sequelize.transaction(); //Transaction starts
+
     try{
         const { id } = req.params;
 
@@ -779,27 +801,30 @@ const deleteClass = async (req, res) => {
             {
                 replacements: {
                     id_class: parseInt(id) 
-                }
+                },
+                transaction
             }
         )
 
         if(!result) return res.status(500).json({status: 500, message: 'Something went wront, no data returned'});
 
+        await transaction.commit();
+
         return res.status(200).json({status: 200, message: result['Total rows deleted'] + ' Rows deleted'});
     }
     catch(err){
-        console.error('Error ' + err);
+        await transaction.rollback();
+        console.error(err);
         return res.status(500).json({status: 500, message: 'Something went wrong ' + err });
     }
 }
 
 const uploadClass = async (req, res) => {
     const { id_class, new_name, new_description, new_max_number_member, new_photo, new_id_status, new_categories } = req.body;
+    
+    const transaction = await db.sequelize.transaction(); //Transaction starts
 
     try{
-        // Initiate transaction
-        const transaction = await db.sequelize.transaction();
-
         const [result] = await db.sequelize.query('CALL UpdateClass(:id_class, :new_name, :new_description, :new_max_number_member, :new_photo, :new_id_status)' , {
             replacements: {
                 id_class: parseInt(id_class),
@@ -808,44 +833,57 @@ const uploadClass = async (req, res) => {
                 new_max_number_member: parseInt(new_max_number_member),
                 new_photo: new_photo,
                 new_id_status: parseInt(new_id_status)
-            }
+            },
+            transaction
         });
-
+                
+        if(!result.class_modified) return res.status(404).json({status: 404, message: 'Class not founded'});
         
-
-        if(!result.class_modified) {
-            //Cancelling changes.
-            await transaction.rollback();
-            return res.status(404).json({status: 404, message: 'Class not founded'})
-        }
-
         console.log('Class edited, uploading categories..');
 
+        await db.sequelize.query('DELETE FROM CLASS_CATEGORY WHERE id_class = :id_class', {
+            replacements: {
+                id_class: parseInt(id_class)
+            },
+            transaction
+        });
 
         try{
-            await new Promise.all(
-                categories.map(async cat => {
+            await Promise.all(
+                new_categories.map(async cat => {
                     try{
-                     
+                        console.log('Inserting category ' + cat);
+                        const categoryInserted = await db.sequelize.query('INSERT INTO CLASS_CATEGORY (id_category, id_class, createdAt, updatedAt) VALUES (:id_category, :id_class, NOW(), NOW() )', {
+                           replacements: {
+                                id_category: cat,
+                                id_class: parseInt(id_class)
+                           },
+                           transaction
+                        });
+
+                        console.log(categoryInserted);
                     } catch (err) {
-                        throw new Error('Error uploading categories')
+                        throw new Error('Error uploading categories ' + err);
                     }
                 })
             )
         } catch (err) {
-            //Cancelling changes.
             await transaction.rollback();
-            console.error('Error uploading categories ' + err);
+            console.log('Rollback in the categories insert');
+            console.error(err);
+            return res.status(500).json({status: 500, message: 'Error inserting categories'});
         }
         
-        //Execute changes.
-        await transaction.commit();
+       
+        await transaction.commit(); // Made the upload in DB
 
         return res.status(200).json({status: 200, message: 'ALL OK'});
         
 
     } catch (err){
-        console.log('Error uploading class ' + err);
+        await transaction.rollback();
+        console.log('External transaction.rollback');
+        console.log(err);
         return res.status(500).json({status: 500, message: 'Error uploading class ' + err});
     }
 }
@@ -872,5 +910,6 @@ module.exports = {
     getAllClasses,
     getTotalCountClasses,
     deleteClass,
-    uploadClass
+    uploadClass,
+    getAllStatusClass
 }

@@ -347,7 +347,7 @@ function FormRegisterClass({ classes }: IRegisterClass) {
                                 id = {category.id_category.toString()}
                                 label = {category.name}
                                 type = {'checkbox'}
-                                name = {'photo'}
+                                name = {'categories'}
                                 required = {false}
                                 value={category.id_category}
                                 classes = {hasError('categories') ? ['error-class'] : ['normal-class']}

@@ -10,14 +10,19 @@ import { useModal } from "../../utils/UseModal";
 import validateSesion from "../../utils/SesionValidator";
 import { useNavigate } from "react-router-dom";
 import ViewClass from "../../components/ViewClass/ViewClass";
-
+import fetchGetAllCategoryClass from "../../utils/FetchGetAllCategoryClass";
+import fetchGetAllStatusClasses from "../../utils/FetchGetAllStatusClasses";
 
 const YourClasses = () => {
     const [isLoadingGetClasses, setIsLoadingGetClasses] = useState<boolean>(true);
+    const [isLoadingGetAllCategories, setIsLoadingGetAllCategories] = useState<boolean>(true);
+    const [isLoadingGetAllStatus, setIsLoadingGetAllStatus] = useState<boolean>(true);
     const [page, setPage] = useState<number>(1);
     const [maxPage, setMaxPage] = useState<number>(1);
     const [allClasses, setAllClasses] = useState<IAllClasses[]>([]);
     const [classData, setClassData] = useState<IClass>();
+    const [allCategories, setAllCategoryClass] = useState([]);
+    const [allStatus, setAllStatus] = useState([]);
     const [typeView, setTypeView] = useState('viewAll');
     const {userData} = useAuthContext();
     const {closeModal, isModalOpen, showModal} = useModal();
@@ -74,10 +79,6 @@ const YourClasses = () => {
         return
     }  
 
-    const handleModifyClass = async (id_class: number) => {
-        console.log('Activao', id_class);
-        return
-    }
 
     const handlerFetchGetClasses = async () => {
         const getClasses = await fetchGetAllClasses(String(page), '3', userData.id_user);
@@ -108,6 +109,7 @@ const YourClasses = () => {
         
     };
 
+
     const nextPage = () => {
         setAllClasses([]); //With this we controll the flow of classes data, whit out it we pass to the next page with the old information.
         setPage((prev) => prev + 1)
@@ -128,12 +130,52 @@ const YourClasses = () => {
         handlerFunctionFetchs();
     }, [page]);
 
+    useEffect(() => {
+        if(isLoadingGetClasses) return
+        
+        const handlerFetchGetAllCategories = async () => {
+            const result = await fetchGetAllCategoryClass();
+            
+            if (result) setAllCategoryClass(result);
+            setIsLoadingGetAllCategories(false);
+        }
 
-    if(isLoadingGetClasses){
+        console.warn('Loading all categories');
+        handlerFetchGetAllCategories();
+        
+        
+    }, [isLoadingGetClasses]);
+
+    useEffect(() => {
+        if(isLoadingGetClasses || isLoadingGetAllCategories) return;
+        
+        const handlerFetchGetAllStatus = async () => {
+            const result = await fetchGetAllStatusClasses();
+            
+            if (result) setAllStatus(result);
+        
+            setIsLoadingGetAllStatus(false);
+        }
+        
+
+        console.warn('Loading all status');
+        handlerFetchGetAllStatus();
+
+    }, [isLoadingGetClasses, isLoadingGetAllCategories]);
+
+
+    if(isLoadingGetClasses || isLoadingGetAllCategories || isLoadingGetAllStatus){
         return(
             <h1>Cargando clases!</h1>
         )
     }
+    
+    if(allClasses.length < 0 || allCategories.length < 0 || allStatus.length < 0) {
+        return (
+            <h1>Error al cargar las clases :(</h1>
+        )
+    }
+
     
 
     if(typeView == 'viewDetail') {
@@ -152,8 +194,9 @@ const YourClasses = () => {
                                     handleBack = {handleViewReturnAllClasses}
                                     isEditable = {true}
                                     deleteClass = {handleDeleteClass}
-                                    modifyClass = {handleModifyClass}
                                     categories = {classData.categories}
+                                    allCategories = {allCategories}
+                                    allStatus = {allStatus}
                                 />
                             ) : (
                                 <h1>Error no se encontró la clase</h1>

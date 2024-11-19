@@ -13,7 +13,7 @@ import { useAuthContext } from "../../hooks/authContext";
 
 const AllClases = () => {
     const [allClasses, setAllClasses] = useState<IAllClasses[]>([]);
-    const [classData, setClassData] = useState<IClass>()
+    const [classData, setClassData] = useState<IClass>();
     const [typeView, setTypeView] = useState('viewAll');
     const {closeModal, isModalOpen, showModal} = useModal();
     const [page, setPage] = useState<number>(1);

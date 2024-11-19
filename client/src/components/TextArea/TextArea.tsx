@@ -3,7 +3,7 @@ import styles from "./TextArea.module.css";
 import formatClass from '../../utils/FormatClass';
 
 
-function TextArea({id, name, label, placeholder, maxlength, rows, cols, required, classes, onChange}: ITextArea){
+function TextArea({id, name, label, placeholder, maxlength, rows, cols, required, classes, value, onChange}: ITextArea){
     const { formatClasses } = formatClass(styles, classes);
 
 
@@ -14,12 +14,13 @@ function TextArea({id, name, label, placeholder, maxlength, rows, cols, required
                 <textarea 
                     id = {id} 
                     name = {name} 
-                    placeholder={placeholder} 
-                    maxLength={maxlength} 
-                    rows={rows} 
-                    cols={cols} 
+                    placeholder = {placeholder} 
+                    maxLength = {maxlength} 
+                    rows = {rows} 
+                    cols = {cols} 
+                    value = {value}
                     required = {required} 
-                    onChange={onChange}>
+                    onChange = {onChange}>
                         
                 </textarea>
             </div>
