@@ -697,7 +697,6 @@ const getAllClasses = async (req, res) => {
         
         if(!listClasses) return res.status(500).json({status: 500, message: 'Error extracting classes categories'});
 
-        console.log('Nueva lista de clases', listClasses);
 
         return res.status(200).json({status: 200, message: 'Success', data: listClasses});
     }
@@ -794,6 +793,63 @@ const deleteClass = async (req, res) => {
     }
 }
 
+const uploadClass = async (req, res) => {
+    const { id_class, new_name, new_description, new_max_number_member, new_photo, new_id_status, new_categories } = req.body;
+
+    try{
+        // Initiate transaction
+        const transaction = await db.sequelize.transaction();
+
+        const [result] = await db.sequelize.query('CALL UpdateClass(:id_class, :new_name, :new_description, :new_max_number_member, :new_photo, :new_id_status)' , {
+            replacements: {
+                id_class: parseInt(id_class),
+                new_name: new_name,
+                new_description: new_description,
+                new_max_number_member: parseInt(new_max_number_member),
+                new_photo: new_photo,
+                new_id_status: parseInt(new_id_status)
+            }
+        });
+
+        
+
+        if(!result.class_modified) {
+            //Cancelling changes.
+            await transaction.rollback();
+            return res.status(404).json({status: 404, message: 'Class not founded'})
+        }
+
+        console.log('Class edited, uploading categories..');
+
+
+        try{
+            await new Promise.all(
+                categories.map(async cat => {
+                    try{
+                     
+                    } catch (err) {
+                        throw new Error('Error uploading categories')
+                    }
+                })
+            )
+        } catch (err) {
+            //Cancelling changes.
+            await transaction.rollback();
+            console.error('Error uploading categories ' + err);
+        }
+        
+        //Execute changes.
+        await transaction.commit();
+
+        return res.status(200).json({status: 200, message: 'ALL OK'});
+        
+
+    } catch (err){
+        console.log('Error uploading class ' + err);
+        return res.status(500).json({status: 500, message: 'Error uploading class ' + err});
+    }
+}
+
 
 
 
@@ -815,5 +871,6 @@ module.exports = {
     getAllCategoryClass,
     getAllClasses,
     getTotalCountClasses,
-    deleteClass
+    deleteClass,
+    uploadClass
 }
