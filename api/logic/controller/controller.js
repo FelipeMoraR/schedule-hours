@@ -824,60 +824,162 @@ const uploadClass = async (req, res) => {
     
     const transaction = await db.sequelize.transaction(); //Transaction starts
 
-    try{
-        const [result] = await db.sequelize.query('CALL UpdateClass(:id_class, :new_name, :new_description, :new_max_number_member, :new_photo, :new_id_status)' , {
-            replacements: {
-                id_class: parseInt(id_class),
-                new_name: new_name,
-                new_description: new_description,
-                new_max_number_member: parseInt(new_max_number_member),
-                new_photo: new_photo,
-                new_id_status: parseInt(new_id_status)
-            },
-            transaction
-        });
-                
-        if(!result.class_modified) return res.status(404).json({status: 404, message: 'Class not founded'});
-        
-        console.log('Class edited, uploading categories..');
+    let messageRes = '';
 
-        await db.sequelize.query('DELETE FROM CLASS_CATEGORY WHERE id_class = :id_class', {
+    try{
+        if(!id_class) return res.status(404).json({status: 404, message: 'Id class not provided'});
+
+        const classExist = await db.sequelize.query('SELECT name FROM CLASS WHERE id_class = :id_class', {
             replacements: {
                 id_class: parseInt(id_class)
             },
+            type: db.Sequelize.QueryTypes.SELECT,
             transaction
         });
 
-        try{
-            await Promise.all(
-                new_categories.map(async cat => {
-                    try{
-                        console.log('Inserting category ' + cat);
-                        const categoryInserted = await db.sequelize.query('INSERT INTO CLASS_CATEGORY (id_category, id_class, createdAt, updatedAt) VALUES (:id_category, :id_class, NOW(), NOW() )', {
-                           replacements: {
-                                id_category: cat,
-                                id_class: parseInt(id_class)
-                           },
-                           transaction
-                        });
-
-                        console.log(categoryInserted);
-                    } catch (err) {
-                        throw new Error('Error uploading categories ' + err);
-                    }
-                })
-            )
-        } catch (err) {
+        if(classExist.length == 0) {
             await transaction.rollback();
-            console.log('Rollback in the categories insert');
-            console.error(err);
-            return res.status(500).json({status: 500, message: 'Error inserting categories'});
+            return res.status(404).json({status: 404, message: 'Class does not exist'})
         }
+
+
+        if (new_name) {
+            const [_, affectedRows] = await db.sequelize.query(`UPDATE CLASS SET name = :name_class WHERE id_class = :id_class `, {
+                replacements: {
+                    name_class: new_name,
+                    id_class: parseInt(id_class)
+                },
+                type: db.Sequelize.QueryTypes.UPDATE,
+                transaction
+            });
+
+            if(affectedRows > 0){
+                messageRes += 'Name changed. '
+            } else {
+                messageRes += 'Name notChanged because is the same value in db but you send it the value. '
+            }
+        }
+
+        if (new_description) {
+            const [_, affectedRows] = await db.sequelize.query(`UPDATE CLASS SET description = :description_class WHERE id_class = :id_class `, {
+                replacements: {
+                    description_class: new_description,
+                    id_class: parseInt(id_class)
+                },
+                type: db.Sequelize.QueryTypes.UPDATE,
+                transaction
+            });
+
+
+            if(affectedRows > 0){
+                messageRes += 'Description changed. '
+            } else {
+                messageRes += 'Description notChanged because is the same value in db but you send it the value. '
+            }
+        }
+
+        if (new_max_number_member) {
+            const [_, affectedRows] = await db.sequelize.query(`UPDATE CLASS SET max_number_member = :max_number_member WHERE id_class = :id_class `, {
+                replacements: {
+                    max_number_member: parseInt(new_max_number_member),
+                    id_class: parseInt(id_class)
+                },
+                type: db.Sequelize.QueryTypes.UPDATE,
+                transaction
+            });
+
+            if(affectedRows > 0){
+                messageRes += 'max_number_member changed. '
+            } else {
+                messageRes += 'max_number_member notChanged because is the same value in db but you send it the value. '
+            }
+        }
+
+        if (new_photo) {
+            const [_, affectedRows] = await db.sequelize.query(`UPDATE CLASS SET photo = :photo WHERE id_class = :id_class `, {
+                replacements: {
+                    photo: new_photo,
+                    id_class: parseInt(id_class)
+                },
+                type: db.Sequelize.QueryTypes.UPDATE,
+                transaction
+            });
+
+            if(affectedRows > 0){
+                messageRes += 'photo changed. '
+            } else {
+                messageRes += 'photo notChanged because is the same value in db but you send it the value. '
+            }
+        }
+
+        if (new_id_status) {
+            const [_, affectedRows] = await db.sequelize.query(`UPDATE CLASS SET id_status = :id_status WHERE id_class = :id_class `, {
+                replacements: {
+                    id_status: parseInt(new_id_status),
+                    id_class: parseInt(id_class)
+                },
+                type: db.Sequelize.QueryTypes.UPDATE,
+                transaction
+            });
+
+            if(affectedRows > 0){
+                messageRes += 'status changed. '
+            } else {
+                messageRes += 'status notChanged because is the same value in db but you send it the value. '
+            }
+        }
+        
+        
+        if(!Array.isArray(new_categories) && new_categories) {
+            await transaction.rollback();
+            return res.status(415).json({status: 415, message: 'Categories must be an array.'})
+        }
+
+        if (new_categories) {
+            //Remember new_categories has to be an array, and you have to controll the send by the front.
+            console.log('Class edited, uploading categories..');
+
+            await db.sequelize.query('DELETE FROM CLASS_CATEGORY WHERE id_class = :id_class', {
+                replacements: {
+                    id_class: parseInt(id_class)
+                },
+                transaction
+            });
+
+            try {
+                await Promise.all(
+                    new_categories.map(async cat => {
+                        try{
+                            console.log('Inserting category ' + cat);
+                            const categoryInserted = await db.sequelize.query('INSERT INTO CLASS_CATEGORY (id_category, id_class, createdAt, updatedAt) VALUES (:id_category, :id_class, NOW(), NOW() )', {
+                            replacements: {
+                                    id_category: parseInt(cat),
+                                    id_class: parseInt(id_class)
+                            },
+                            transaction
+                            });
+
+                            console.log(categoryInserted);
+                        } catch (err) {
+                            throw new Error('Error uploading categories ' + err);
+                        }
+                    })
+                );
+
+                messageRes += 'Categories changed. '
+            } catch (err) {
+                await transaction.rollback();
+                console.log('Rollback in the categories insert');
+                console.error(err);
+                return res.status(500).json({status: 500, message: 'Error inserting categories'});
+            }
+        }
+        
         
        
         await transaction.commit(); // Made the upload in DB
 
-        return res.status(200).json({status: 200, message: 'ALL OK'});
+        return res.status(200).json({status: 200, message: messageRes});
         
 
     } catch (err){

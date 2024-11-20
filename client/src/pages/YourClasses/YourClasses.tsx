@@ -28,7 +28,6 @@ const YourClasses = () => {
     const {closeModal, isModalOpen, showModal} = useModal();
     const navigate = useNavigate();
     
-    
     const handleViewDetailClass = async (id_class: any) => {
         const statusSesion = await validateSesion();
         
@@ -162,6 +161,7 @@ const YourClasses = () => {
         handlerFetchGetAllStatus();
 
     }, [isLoadingGetClasses, isLoadingGetAllCategories]);
+
 
 
     if(isLoadingGetClasses || isLoadingGetAllCategories || isLoadingGetAllStatus){

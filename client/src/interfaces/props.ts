@@ -174,3 +174,13 @@ export interface ISelect<T> { //<T> Allow any type of obj
     selectedValue?: string | number;  // DefaultValue
     onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }
+
+export interface IBodyCreateClass {
+    id_class: number;
+    new_name?: string; 
+    new_description?: string;
+    new_max_number_member?: string;
+    new_photo?: string;
+    new_id_status?: string,
+    new_categories?: Array<string>;
+}

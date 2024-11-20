@@ -1,13 +1,28 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { IClass } from "../../interfaces/props";
 import Button from "../Button/Button";
 import InputField from '../InputField/InputField';
 import TextArea from '../TextArea/TextArea';
 import convertBase64 from "../../utils/decodeImageBase64";
 import Select from "../Select/Select";
+import { useModal } from '../../utils/UseModal.ts';
+import Modal from '../Modal/Modal.tsx';
+import { 
+    validateOnlyNumberLetters, 
+    validateOnlyLetters, 
+    validateOnlyNumbers, 
+    validateMaxLengthInput, 
+    validateMinLengthInput,
+    identifyInputError
+} from '../../utils/InputValidator.tsx';
+import { useNavigate } from 'react-router-dom';
+import validateSesion from '../../utils/SesionValidator.ts';
+import fetchUpdateClass from "../../utils/FetchUpdateClass.ts";
+import fetchUploadImg from "../../utils/FetchUploadImgClodify.ts";
+import { IBodyCreateClass } from "../../interfaces/props"; 
 
 const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, type_user, categories, allCategories, allStatus, deleteClass } : IClass) => {
-
+    console.log('Render classEditable');
     const id_status_filtered = allStatus?.filter(status => status.name === status_name ).map(status => status.id_status)[0]; //Remember, if you just use one '=' this repleace all name of the obj.
 
     const id_category_filtered = categories?.map(cat => cat.id_category.toString());
@@ -22,6 +37,11 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
     const [categorySelected, setCategoryClassSelected] = useState<Array<string>>(id_category_filtered);
     const [preViewImg, setPreViewImg] = useState<string | null | ArrayBuffer>(photo); //What is an ArrayBuffer?
     const [imgUri64, setImgUri64] = useState<string>('');
+    const navigate = useNavigate();
+    const { closeModal, isModalOpen, showModal } = useModal();
+    const [messageResponse, setMessageResponse] = useState<string>();
+    const { addIdError, removeIdError, emptyIdError, hasError } = identifyInputError();
+
 
     //We have to add error controll
     const handlePreViewImg = (files: Blob) => {
@@ -36,6 +56,51 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
             }
 
             reader.readAsDataURL(files);
+    }
+
+    const emptyPhoto = () => {
+        setPreViewImg(photo);
+        setFormValues({
+            ...formValues,
+            ['photo']: ''
+        })
+    }
+
+    //Here we configurate the base of the body, but still left the img, img will be retrieve with an endpoint so in this function we dont added it.
+    const bodyCreation = () => {
+        const bodyCreateClass: IBodyCreateClass = {
+            "id_class": id_class,
+        }
+        
+        const categorySelectedSorted = categorySelected.sort();
+        const idCategoryFilteredSorted = id_category_filtered.sort();
+
+        if(formValues.name !== class_name) {
+            bodyCreateClass["new_name"] = formValues.name;
+        }
+
+        if(formValues.description !== description) {
+            bodyCreateClass["new_description"] = formValues.description;
+        }
+        
+        if(formValues.max_members !== max_number_member) {
+            bodyCreateClass["new_max_number_member"] = formValues.max_members.toString();
+        }
+
+        if(formValues.id_status?.toString() !== id_status_filtered?.toString()) {
+            bodyCreateClass["new_id_status"] = formValues?.id_status?.toString();
+        }
+
+        if(categorySelectedSorted.length === idCategoryFilteredSorted.length) {
+            const isSame = categorySelectedSorted.every((value, index) => value === idCategoryFilteredSorted[index]);
+            
+            if (!isSame) bodyCreateClass["new_categories"] = categorySelected;
+        } else {
+            bodyCreateClass["new_categories"] = categorySelected;
+        }
+
+
+        return bodyCreateClass
     }
 
     const handleInputOnChange = async (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement> | React.ChangeEvent<HTMLSelectElement>) => {
@@ -112,11 +177,99 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
     const handleSubmitEditClass = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
+        showModal('loadingForm');
 
+        const statusSesion = await validateSesion();
+
+        if(!statusSesion){
+            closeModal(); //Closing loadingForm modal
+
+            setMessageResponse('Sesion caducada');
+            showModal('infoResponse');
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            navigate('/login-user');
+            return
+        }
+
+        //First parts of the uploadClass body
+        const body = bodyCreation();
+
+         
+        if (formValues.photo != ""){
+            const bodyUploadImg = JSON.stringify({
+                "image": imgUri64
+            });
+
+            
+            const responseUrlImg = await fetchUploadImg(bodyUploadImg);
+        
+            if(!responseUrlImg) {
+                closeModal(); //Closing loadingForm modal
+            
+                setMessageResponse(responseUrlImg.message);
+                showModal('infoResponse');
+
+                return;
+            };
+
+            body["new_photo"] = responseUrlImg.message;
+        }
+        
+
+        if(Object.keys(body).length === 1) {
+            console.log('No changes');
+            closeModal(); //Closing loadingForm modal
+            
+            setMessageResponse('No changes');
+            showModal('infoResponse');
+            return
+        }
+
+        
+        const formatBody = JSON.stringify(body);
+        console.log(formatBody); 
+
+        
+        const response = await fetchUpdateClass(formatBody);
+
+        console.log(response);
+
+        if(response.status !== 200){
+            console.log('Error updateClass');
+            return
+        }
+
+        console.log('Upload completed!');
+        navigate('/your-classes');
+
+        return
     }
+
 
     return (
         <>
+
+        <Modal 
+                id = 'loadingForm'
+                type = 'loader'
+                title = 'loadingForm'
+                isOpen = {isModalOpen('loadingForm')}
+                classes = {['modal-infomative-grey']}
+                onClose = {closeModal}
+            />
+
+            <Modal 
+                id = 'infoResponse'
+                type = 'informative'
+                title = 'Result'
+                paragraph = {messageResponse}
+                isOpen = {isModalOpen('infoResponse')}
+                classes = {['modal-infomative-grey']}
+                onClose = {closeModal}
+            />
+
             <form onSubmit={handleSubmitEditClass}>
                 <InputField
                     id = {'name'}
@@ -164,14 +317,28 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     label = {'Foto clase'}
                     type = {'file'}
                     name = {'photo'}
-                    required = {true}
+                    required = {false}
                     value={formValues.photo}
                     //classes = {hasError('photo') ? ['error-class'] : ['normal-class']}
                     classes = {['']}
                     onChange={handleInputOnChange}
                 />
+                
+                <Button
+                    id = "emptyInput"
+                    text = "Eliminar foto"
+                    classes = {['a']}
+                    onClick = {emptyPhoto}
+                    type = "button"
 
-                <img src = {preViewImg} alt="jeje" />
+                />
+
+                {
+                    preViewImg && !(preViewImg instanceof ArrayBuffer) ? (
+                        <img src={preViewImg} alt="jeje" />
+                    ) : null
+                }
+                
 
 
                 <Select
@@ -207,8 +374,18 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                         <p>No hay ninguna categoria</p>
                     )
                 }
+
+                <Button
+                    id = "emptyInput"
+                    text = "Modificar Clase"
+                    classes = {['a']}
+                    type = "submit"
+                />
+                
+
             </form>
-                           
+                
+            
             {
                 type_user != 2 && deleteClass ? (
                     <div>

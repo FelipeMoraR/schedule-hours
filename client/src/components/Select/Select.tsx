@@ -2,7 +2,6 @@ import { ISelect } from "../../interfaces/props";
 
 const Select = <T,>({ id, name, values, selectedValue, keyValue, keyName, onChange}: ISelect<T>) => {
     
-    console.log('entry value => ', selectedValue)
     return (
         <>
             <select 
