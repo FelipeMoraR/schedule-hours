@@ -1009,7 +1009,38 @@ const getAllMembersClass = async (req, res) => {
         return res.status(200).json({status: 200, data: result});
 
     } catch(err){
-        console.log('Something wrong happend ', err);
+        console.log('Something wrong happend ' + err);
+        return res.status(500).json({status: 500, message: 'Something went wrong ' + err});
+    }
+}
+
+const removeMemberClass = async (req, res) => {
+    const transaction = await db.sequelize.transaction();
+
+    try{
+        const { idUser, idClass } = req.query;
+        
+        const result = await db.sequelize.query('DELETE FROM CLASS_USER WHERE id_user = :id_user AND id_class = :id_class', {
+            replacements: {
+                id_user: parseInt(idUser),
+                id_class: parseInt(idClass)
+            },
+            type: db.Sequelize.QueryTypes.BULKDELETE, 
+            transaction
+        });
+
+        if(!result || result == 0) {
+            await transaction.rollback();
+            console.log('Delete anything, going back...');
+            return res.status(404).json({status: 404, message: 'Nothing to delete...'});
+        }
+
+        await transaction.commit();
+
+        return res.status(200).json({status: 200, message: 'User removed'});
+        
+    } catch(err){
+        console.error('Somethin went wrong ' + err);
         return res.status(500).json({status: 500, message: 'Something went wrong ' + err});
     }
 }
@@ -1036,5 +1067,6 @@ module.exports = {
     deleteClass,
     uploadClass,
     getAllStatusClass,
-    getAllMembersClass
+    getAllMembersClass,
+    removeMemberClass
 }
