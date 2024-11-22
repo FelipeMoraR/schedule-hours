@@ -1,13 +1,39 @@
-import { IViewClass } from "../../interfaces/props";
+import { IViewClass, IMember } from "../../interfaces/props";
 import Button from "../Button/Button";
 import ClassEditable from "./ClassEditable";
 import ClassNotEditable from "./ClassNotEditable";
-
+import fetchGetAllMembersClass from "../../utils/FetchGetAllMembers";
+import { useEffect, useState } from "react";
 
 
 
 const ViewClass = ({id_class, class_name, description, max_number_member, photo, status_name, type_user, isEditable, categories, allCategories, allStatus, handleBack, deleteClass} : IViewClass) => {
+    const [membersClass, setMembersClass] = useState<Array<IMember>>([]);
+    const [isLoadingMembers, setIsLoadingMembers] = useState<boolean>(true);
+
+    const handleGetMembers = async () => {
+        const result = await fetchGetAllMembersClass(id_class.toString());
+        
+        if(!result) {
+            setIsLoadingMembers(false);
+            return
+        }
+       
+        setMembersClass(result);
+        setIsLoadingMembers(false);
+    }
+
+    useEffect(() => {
+        handleGetMembers();
+    }, []);
+
+    if(isLoadingMembers){
+        return(
+            <h1>Loading members</h1>
+        )
+    }
     
+
     if(!isEditable){
         return(
             <>
@@ -28,6 +54,7 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                     status_name = {status_name}
                     type_user = {type_user}
                     categories = {categories}
+                    members={membersClass}
                 />
             </>
         )
@@ -50,11 +77,11 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                 max_number_member = {max_number_member}
                 photo = {photo}
                 status_name = {status_name}
-                type_user = {type_user}
                 deleteClass = {deleteClass}
                 categories = {categories}
                 allCategories = {allCategories}
                 allStatus = {allStatus}
+                members={membersClass}
             />
         </>
     )

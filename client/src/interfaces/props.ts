@@ -91,12 +91,12 @@ export interface ITextArea {
 
 export interface IAllCategoryClass { 
     id_category: number;
-    name: string;
+    category_name: string;
 }
 
 export interface ICategoryClass {
     id_category: number;
-    name: string;
+    category_name: string;
 }
 
 export interface IStatusClass {
@@ -114,6 +114,10 @@ export interface IAllClasses {
     categories: Array<ICategoryClass>
 }
 
+export interface IMember {
+    id_type_class_user: number;
+    username: string;   
+}
 
 export interface IClass {
     id_class: number;
@@ -122,10 +126,11 @@ export interface IClass {
     max_number_member: number;
     photo: string;
     status_name: string;
-    type_user: number;
+    type_user?: number;
     categories: Array<ICategoryClass>;
     allCategories?: Array<ICategoryClass>;
     allStatus? : Array<IStatusClass>;
+    members: Array<IMember>;
     deleteClass? : (id_class: number) => void;
 }
 

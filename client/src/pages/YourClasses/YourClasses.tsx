@@ -192,7 +192,7 @@ const YourClasses = () => {
                                     status_name = {classData.status_name}
                                     type_user = {classData.type_user}
                                     handleBack = {handleViewReturnAllClasses}
-                                    isEditable = {true}
+                                    isEditable = {classData.type_user !== 2 ? true : false}
                                     deleteClass = {handleDeleteClass}
                                     categories = {classData.categories}
                                     allCategories = {allCategories}

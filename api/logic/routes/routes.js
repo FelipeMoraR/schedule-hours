@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { registerUser, loginUser, logoutUser, midleWareVerifyToken, createTypeUser, cookieValidator, 
     removeCookie, refreshToken, insertTokenBlackList, getUserData, createStatusClass, createClass, resUploadCloudImg,
-    getAllCategoryClass, getAllClasses, getTotalCountClasses, deleteClass, uploadClass, getAllStatusClass
+    getAllCategoryClass, getAllClasses, getTotalCountClasses, deleteClass, uploadClass, getAllStatusClass, getAllMembersClass
 
 } = require('../controller/controller')
 
@@ -26,9 +26,9 @@ router.get('/all-category-class', midleWareVerifyToken, getAllCategoryClass);
 router.get('/all-classes', midleWareVerifyToken, getAllClasses);
 router.get('/all-counted-classes', midleWareVerifyToken, getTotalCountClasses);
 router.delete('/delete-class/:id', midleWareVerifyToken, deleteClass);
-router.put('/upload-class', uploadClass);
-router.get('/all-status-class', getAllStatusClass);
-
+router.put('/upload-class', midleWareVerifyToken, uploadClass);
+router.get('/all-status-class',midleWareVerifyToken, getAllStatusClass);
+router.get('/members-class', getAllMembersClass);
 
 
 

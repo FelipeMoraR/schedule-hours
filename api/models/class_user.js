@@ -39,7 +39,18 @@ module.exports = (sequelize) => {
       },
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL'
+    },
+
+    id_type_class_user: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'TYPECLASSUSER', // Table name for the reference
+        key: 'id_type_class_user'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL'
     }
+    
   }, {
     sequelize,
     modelName: 'CLASS_USER', 

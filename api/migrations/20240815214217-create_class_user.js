@@ -28,6 +28,15 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL'
       },
+      id_type_class_user: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'TYPECLASSUSER', // Table name for the reference
+          key: 'id_type_class_user'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

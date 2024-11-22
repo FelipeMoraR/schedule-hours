@@ -215,7 +215,8 @@ function FormRegisterClass({ classes }: IRegisterClass) {
             "description": formValues["description"], 
             "max_members": formValues["max_members"], 
             "photo": responseUrlImg.message,
-            "categories": cateogyClassSelected
+            "categories": cateogyClassSelected,
+            "id_type_class_user": 1
         });
         
         const responseCreateClass = await fetchCreateClass(bodyCreateClass);
@@ -345,7 +346,7 @@ function FormRegisterClass({ classes }: IRegisterClass) {
                             <div key={category.id_category}>
                                 <InputField
                                 id = {category.id_category.toString()}
-                                label = {category.name}
+                                label = {category.category_name}
                                 type = {'checkbox'}
                                 name = {'categories'}
                                 required = {false}

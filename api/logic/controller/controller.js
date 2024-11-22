@@ -562,21 +562,22 @@ const createStatusClass = async (req, res) => {
 
 const createClass = async (req, res) => {     
     try{
-        const {name, description, max_members, photo, categories} = req.body;
+        const {name, description, max_members, photo, categories, id_type_class_user} = req.body;
         const userId = req.info.id;
 
         if(!userId) return res.status(404).json({status: 404, message: 'Id user not provided'});
 
         if(!name || !description || !max_members || !photo) return res.status(400).json({status: 400, message: 'Some value on the req.body is missing'});
 
-        const [result] = await db.sequelize.query('CALL CreateNewClass(:id_user, :name, :description, :max_members, :photo)', 
+        const [result] = await db.sequelize.query('CALL CreateNewClass(:id_user, :name, :description, :max_members, :photo, :id_type_class_user)', 
             {
                 replacements: {
                     id_user: userId,
                     name: name,
                     description: description,
                     max_members: max_members,
-                    photo: photo
+                    photo: photo,
+                    id_type_class_user: id_type_class_user
                 },
                 type: db.Sequelize.QueryTypes.RAW
             }
@@ -755,7 +756,7 @@ const getTotalCountClasses = async (req, res) => {
 
 const getAllCategoryClass = async (_, res) => {
     try{
-        const result = await db.sequelize.query('SELECT id_category, name FROM category;', 
+        const result = await db.sequelize.query('SELECT id_category, name AS category_name FROM category;', 
             {
                 type: db.Sequelize.QueryTypes.SELECT
             }
@@ -990,7 +991,28 @@ const uploadClass = async (req, res) => {
     }
 }
 
+const getAllMembersClass = async (req, res) => {
+    try{
+        const { idClass } = req.query;
 
+        if(!idClass) return res.status(404).json({status: 404, message: 'id_class not provided'});
+
+        const result = await db.sequelize.query('SELECT cu.id_type_class_user, u.username FROM CLASS_USER cu JOIN USER u ON cu.id_user = u.id_user WHERE cu.id_class = :id_class;', {
+            replacements: {
+                id_class: parseInt(idClass)
+            },
+            type: db.Sequelize.QueryTypes.SELECT
+        });
+        
+        if(!result) return res.status(404).json({status: 404, message: 'No memebers found'});
+
+        return res.status(200).json({status: 200, data: result});
+
+    } catch(err){
+        console.log('Something wrong happend ', err);
+        return res.status(500).json({status: 500, message: 'Something went wrong ' + err});
+    }
+}
 
 
 
@@ -1013,5 +1035,6 @@ module.exports = {
     getTotalCountClasses,
     deleteClass,
     uploadClass,
-    getAllStatusClass
+    getAllStatusClass,
+    getAllMembersClass
 }

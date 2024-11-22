@@ -21,8 +21,8 @@ import fetchUpdateClass from "../../utils/FetchUpdateClass.ts";
 import fetchUploadImg from "../../utils/FetchUploadImgClodify.ts";
 import { IBodyCreateClass } from "../../interfaces/props"; 
 
-const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, type_user, categories, allCategories, allStatus, deleteClass } : IClass) => {
-    console.log('Render classEditable');
+const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members } : IClass) => {
+
     const id_status_filtered = allStatus?.filter(status => status.name === status_name ).map(status => status.id_status)[0]; //Remember, if you just use one '=' this repleace all name of the obj.
 
     const id_category_filtered = categories?.map(cat => cat.id_category.toString());
@@ -41,7 +41,8 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
     const { closeModal, isModalOpen, showModal } = useModal();
     const [messageResponse, setMessageResponse] = useState<string>();
     const { addIdError, removeIdError, emptyIdError, hasError } = identifyInputError();
-
+    const [errorFormatImg, setErrorFormatImg] = useState('');
+    const [errorForm, setErrorForm] = useState<Array<string>>([]);
 
     //We have to add error controll
     const handlePreViewImg = (files: Blob) => {
@@ -109,7 +110,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
             [event.target.id]: event.target.value
         });
 
-        //removeIdError(event.target.id); //Implement this on the other form (RegisterForm)
+        removeIdError(event.target.id); //Implement this on the other form (RegisterForm)
 
         if(!(event.target instanceof HTMLInputElement)) return; //This prevent the access of htmlTextAreaElements elements to the rest of code.
 
@@ -123,8 +124,8 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
         const fileSizeMb = files[0].size / (1024 * 1024);
 
         if(fileSizeMb > 9.5){
-            //setErrorFormatImg('Mi loco la imagen pesa mucho, debe ser inferior a 9.5mb');
-            //addIdError('photo');
+            setErrorFormatImg('Mi loco la imagen pesa mucho, debe ser inferior a 9.5mb');
+            addIdError('photo');
             setFormValues({
                 ...formValues,
                 ['photo']: ''
@@ -141,13 +142,17 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
             handlePreViewImg(files[0]);
             
             setImgUri64(imgBs64);
-            //removeIdError('photo');
-            //setErrorFormatImg('');
+            removeIdError('photo');
+            setErrorFormatImg('');
             return
         }
 
-        //setErrorFormatImg('Formato no aceptado, debe ser una imagen');
-        //addIdError('photo');
+        
+        
+        setErrorFormatImg('Formato no aceptado, debe ser una imagen');
+        
+        
+        addIdError('photo');
         setFormValues({
             ...formValues,
             ['photo']: ''
@@ -180,6 +185,64 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
         showModal('loadingForm');
 
         const statusSesion = await validateSesion();
+
+        const errors: string[] = [];
+        const addError = (error: string) => errors.push(error);
+        const { name, description, max_members } = formValues;
+
+
+        if(!validateOnlyLetters(name)) {
+            addError('Solo se admiten letras en el nombre de la clase');
+            addIdError('name'); 
+        }
+
+        if(!validateMaxLengthInput(name, 45) || !validateMinLengthInput(name, 1)){
+            addError('Largo del texto debe estar entre 1 a 45 caracteres');
+            addIdError('name');
+        }
+
+        if(validateOnlyLetters(name) && validateMaxLengthInput(name, 45) && validateMinLengthInput(name, 1)) removeIdError('name');
+
+        if(!validateOnlyNumberLetters(description)) {
+            addError('Solo se admiten letras y números en la descripción de la clase');
+            addIdError('description'); 
+        }
+
+        if(!validateMaxLengthInput(description, 255) || !validateMinLengthInput(description, 1)){
+            addError('Largo del texto debe estar entre 1 a 255 caracteres');
+            addIdError('description');
+        }
+
+        if(validateOnlyNumberLetters(description) && validateMaxLengthInput(description, 255) && validateMinLengthInput(description, 1)) removeIdError('description');
+        
+        if(!validateOnlyNumbers(max_members.toString())){
+            addError('Solo se admiten número en el maximo número de participantes');
+            addIdError('max_members');
+        }
+
+        if(!validateMaxLengthInput(max_members.toString(), 2) || !validateMinLengthInput(max_members.toString(), 1)){
+            addError('Largo maximo del número son 2 digitos');
+            addIdError('max_members');
+        }
+
+        if(validateOnlyNumbers(max_members.toString()) && validateMaxLengthInput(max_members.toString(), 2) && validateMinLengthInput(max_members.toString(), 1)) removeIdError('max_members');
+
+        if(categorySelected.length === 0) {
+            addError('Debes seleccionar al menos una categoria');
+            addIdError('categories');
+        } 
+
+        if(categorySelected.length > 0) removeIdError('categories');
+
+        if(errors.length > 0){
+            setErrorForm(errors);
+            closeModal();
+            return
+        }
+
+        emptyIdError();
+        setErrorForm([]);
+
 
         if(!statusSesion){
             closeModal(); //Closing loadingForm modal
@@ -234,8 +297,6 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
         
         const response = await fetchUpdateClass(formatBody);
 
-        console.log(response);
-
         if(response.status !== 200){
             console.log('Error updateClass');
             return
@@ -246,7 +307,6 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
 
         return
     }
-
 
     return (
         <>
@@ -271,6 +331,26 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
             />
 
             <form onSubmit={handleSubmitEditClass}>
+
+
+                {
+                    errorForm.length !== 0 ? (
+                        <div className='error'>
+                            {errorForm.map((error, index) => (
+                                <p key={index}>{error}</p>
+                            ))}
+                        </div>
+                    ) : null
+                }
+
+                {
+                    errorFormatImg !== '' ? (
+                        <div className='error'>
+                            <p>{errorFormatImg}</p>
+                        </div>
+                    ) : null
+                }
+
                 <InputField
                     id = {'name'}
                     label = {'Nombre Clase'}
@@ -279,8 +359,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     required = {true}
                     maxLength={45}
                     value = {formValues.name}
-                    //classes = {hasError('name') ? ['error-class'] : ['normal-class']} 
-                    classes={['']}
+                    classes = {hasError('name') ? ['error-class'] : ['normal-class']} 
                     onChange={handleInputOnChange}
                 />
 
@@ -294,10 +373,10 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     cols = {20}
                     value = {formValues.description}
                     required = {true}
-                    //classes = {hasError('description') ? ['error-class'] : ['normal-class']} 
-                    classes = {['sdfklpg']}
+                    classes = {hasError('description') ? ['error-class'] : ['normal-class']} 
                     onChange={handleInputOnChange}
                 />
+
                 <InputField
                     id = {'max_members'}
                     label = {'Numero maximo miembros'}
@@ -306,8 +385,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     required = {true}
                     maxLength={45}
                     value = {formValues.max_members}
-                    //classes = {hasError('name') ? ['error-class'] : ['normal-class']} 
-                    classes={['']}
+                    classes = {hasError('max_members') ? ['error-class'] : ['normal-class']} 
                     onChange={handleInputOnChange}
                 />
 
@@ -319,8 +397,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     name = {'photo'}
                     required = {false}
                     value={formValues.photo}
-                    //classes = {hasError('photo') ? ['error-class'] : ['normal-class']}
-                    classes = {['']}
+                    classes = {hasError('photo') ? ['error-class'] : ['normal-class']}
                     onChange={handleInputOnChange}
                 />
                 
@@ -358,13 +435,12 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                             <div key={cat.id_category}>
                                 <InputField
                                 id = {cat.id_category.toString()}
-                                label = {cat.name}
+                                label = {cat.category_name}
                                 type = {'checkbox'}
                                 name = {'categories'}
                                 required = {false}
                                 value={cat.id_category}
-                                //classes = {hasError('categories') ? ['error-class'] : ['normal-class']}
-                                classes={['lol']}
+                                classes = {hasError('categories') ? ['error-class'] : ['normal-class']}
                                 onChange={handleInputOnChangeCategory}
                                 checked = {categorySelected.includes(cat.id_category.toString())}
                                 />
@@ -381,28 +457,44 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     classes = {['a']}
                     type = "submit"
                 />
-                
 
+
+                {
+                    deleteClass ? (
+                        <div>
+                            <Button
+                                id = 'deleteClass'
+                                text = 'Eliminar clase'
+                                type = 'buttom'
+                                classes = {['btn-delete']}
+                                onClick = {() => {
+                                    deleteClass(id_class);
+                                }}
+                            />
+
+                        </div>
+                    ) : null
+                }
             </form>
                 
+            <h1>Miembros</h1>
+                {
+                    members.length > 0 ? (
+                        members.map((member, index) => (
+                            <div key={member.id_type_class_user}>
+                                {index + 1} - {member.username}
+                                {   
+                                    member.id_type_class_user !== 1 ? (
+                                        <button>Eliminar</button>
+                                    ) : null
+                                }
+                            </div>
+                        ))
+                    ) : (
+                        <h2>No hay miembros</h2>
+                    )
+                }
             
-            {
-                type_user != 2 && deleteClass ? (
-                    <div>
-                        <Button
-                            id = 'deleteClass'
-                            text = 'Eliminar clase'
-                            type = 'buttom'
-                            classes = {['btn-delete']}
-                            onClick = {() => {
-                                deleteClass(id_class);
-                            }}
-                        />
-
-                    </div>
-                ) : null
-            }
-
         </>
     )
 }   
