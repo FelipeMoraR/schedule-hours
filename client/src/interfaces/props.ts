@@ -111,7 +111,9 @@ export interface IAllClasses {
     max_number_member: number;
     photo: string;
     status_name: string;
-    categories: Array<ICategoryClass>
+    time_class: string;
+    date_class: string;
+    categories: Array<ICategoryClass>;
 }
 
 export interface IMember {
@@ -130,7 +132,9 @@ export interface IClass {
     categories: Array<ICategoryClass>;
     allCategories?: Array<ICategoryClass>;
     allStatus? : Array<IStatusClass>;
-    members: Array<IMember>;
+    members?: Array<IMember>;
+    time_class?: string;
+    date_class?: string;
     deleteClass? : (id_class: number) => void;
 }
 
@@ -141,7 +145,9 @@ export interface IViewClass {
     max_number_member: number;
     photo: string;
     status_name: string;
-    type_user: number;
+    type_user?: number;
+    time_class?: string;
+    date_class?: string;
     isEditable: boolean;
     categories: Array<ICategoryClass>;
     allCategories?: Array<ICategoryClass>;

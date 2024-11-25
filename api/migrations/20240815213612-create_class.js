@@ -14,6 +14,14 @@ module.exports = {
         type: Sequelize.STRING(45),
         allowNull: false
       },
+      date_class: {
+        type: Sequelize.DATE,
+        allowNull: false
+      },
+      time_class: {
+        type: Sequelize.TIME,
+        allowNull: false
+      },
       description: {
         type: Sequelize.STRING(255),
         allowNull: false

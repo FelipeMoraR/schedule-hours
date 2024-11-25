@@ -2,7 +2,7 @@ import { IClass } from "../../interfaces/props";
 
 
 
-const ClassNotEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, type_user, categories, members } : IClass) => {
+const ClassNotEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, type_user, categories, members, time_class, date_class } : IClass) => {
     return (
         <>
             <h1>VISTA INTERNA clase normal, esta es su id = {id_class} </h1>
@@ -20,6 +20,17 @@ const ClassNotEditable = ({ id_class, class_name, description, max_number_member
                     <p>{description}</p>
                     <img src={photo} alt={class_name} />
                 </div>
+                
+                <div>
+                    {
+                        date_class && time_class ? (
+                            <p>Fecha: {date_class} - {time_class}</p>
+                        ) : (
+                            <p>No tiene fecha</p>
+                        )
+                    }
+        
+                </div>
 
                 {
                     categories.map(el => (
@@ -31,7 +42,7 @@ const ClassNotEditable = ({ id_class, class_name, description, max_number_member
 
                 <h1>Miembros</h1>
                 {
-                    members.length > 0 ? (
+                    members && members.length > 0 ? (
                         members.map((member, index) => (
                             <div key={member.id_type_class_user}>
                                 {index + 1} - {member.username}

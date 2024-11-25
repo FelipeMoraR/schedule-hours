@@ -150,6 +150,7 @@ const cookieValidator = async(req, res) => {
 
 //using it
 const midleWareVerifyToken = async (req, res, next) => {
+    console.log('Ejecutando middleware');
     try{
         const authToken = req.cookies.token;
         
@@ -562,14 +563,14 @@ const createStatusClass = async (req, res) => {
 
 const createClass = async (req, res) => {     
     try{
-        const {name, description, max_members, photo, categories, id_type_class_user} = req.body;
+        const { name, description, max_members, photo, categories, id_type_class_user, date, time } = req.body;
         const userId = req.info.id;
 
         if(!userId) return res.status(404).json({status: 404, message: 'Id user not provided'});
 
-        if(!name || !description || !max_members || !photo) return res.status(400).json({status: 400, message: 'Some value on the req.body is missing'});
+        if( !name || !description || !max_members || !photo || !date || !time ) return res.status(400).json({status: 400, message: 'Some value on the req.body is missing'});
 
-        const [result] = await db.sequelize.query('CALL CreateNewClass(:id_user, :name, :description, :max_members, :photo, :id_type_class_user)', 
+        const [result] = await db.sequelize.query('CALL CreateNewClass(:id_user, :name, :description, :max_members, :photo, :id_type_class_user, :date, :time)', 
             {
                 replacements: {
                     id_user: userId,
@@ -577,7 +578,9 @@ const createClass = async (req, res) => {
                     description: description,
                     max_members: max_members,
                     photo: photo,
-                    id_type_class_user: id_type_class_user
+                    id_type_class_user: id_type_class_user,
+                    date: date,
+                    time: time
                 },
                 type: db.Sequelize.QueryTypes.RAW
             }
@@ -670,6 +673,8 @@ const getAllClasses = async (req, res) => {
                     c.description,
                     c.max_number_member,
                     c.photo,
+                    c.date_class,
+                    c.time_class,
                     s.name AS status_name
                     FROM CLASS c 
 	                JOIN CLASS_USER cu ON c.id_class = cu.id_class

@@ -30,6 +30,13 @@ const ViewAllClasses = ({allClasses, type_user, isEditable, handleViewClass, del
 
                                             <img src={element.photo} alt={element.class_name} className = {styles.imgClass} />
                                             
+                                            {
+                                                element.time_class && element.date_class ? (
+                                                    <p>Fechas {element.time_class} - {element.date_class}</p>
+                                                ) : (
+                                                    <p>No tiene fechas</p>
+                                                )
+                                            }
 
                                             {
                                                 element.categories && element.categories.length > 0 ? (

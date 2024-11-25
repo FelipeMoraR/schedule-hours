@@ -24,12 +24,15 @@ import { useNavigate } from 'react-router-dom';
 import validateSesion from '../../utils/SesionValidator.ts';
 
 function FormRegisterClass({ classes }: IRegisterClass) {
+    
     const { formatClasses } = formatClass(styles, classes);
     const [formValues, setFormValues] = useState({
         "name": "",
         "description": "",
         "max_members": "",
-        "photo": ""
+        "photo": "",
+        "date": "",
+        "time": ""
     });
     const [imgUri64, setImgUri64] = useState<string>('');
     const [isLoadingCategory, setIsLoadingCategory] = useState<boolean>(true);
@@ -40,10 +43,32 @@ function FormRegisterClass({ classes }: IRegisterClass) {
     const { addIdError, removeIdError, emptyIdError, hasError } = identifyInputError();
     const [errorForm, setErrorForm] = useState<Array<string>>([]);
     const [errorFormatImg, setErrorFormatImg] = useState('');
+    const [preViewImg, setPreViewImg] = useState<string | null | ArrayBuffer>(); //What is an ArrayBuffer?
     const navigate = useNavigate();
 
 
+    //We have to add error controll
+    const handlePreViewImg = (files: Blob) => {
+        const reader = new FileReader(); //What is this?
 
+            reader.onload = () => { //Why i have to use this??
+                setPreViewImg(reader.result);
+            }
+
+            reader.onerror = () => {
+                setPreViewImg('');
+            }
+
+            reader.readAsDataURL(files);
+    }
+
+    const emptyPhoto = () => {
+        setPreViewImg('');
+        setFormValues({
+            ...formValues,
+            ['photo']: ''
+        })
+    }
     
 
     const handleInputOnChange = async (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -80,6 +105,8 @@ function FormRegisterClass({ classes }: IRegisterClass) {
             
             if(typeof(imgBs64) !== 'string') return
             
+            handlePreViewImg(files[0]);
+
             setImgUri64(imgBs64);
             removeIdError('photo');
             setErrorFormatImg('');
@@ -114,15 +141,31 @@ function FormRegisterClass({ classes }: IRegisterClass) {
         setCateogyClassSelected(arrayClean);
     }
 
-    const handleSubmitRegisterClass = async (event: React.FormEvent<HTMLFormElement>) =>{
+    const handleSubmitRegisterClass = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         
         showModal('loadingForm');
 
         const errors: string[] = [];
         const addError = (error: string) => errors.push(error);
-        const { name, description, max_members, photo } = formValues;
+        const { name, description, max_members, photo, date, time } = formValues;
 
+        if(!date || !time) {
+            addError('Debes ingresar una fecha y su hora');
+            addIdError('date');
+        }
+
+        const dateTimeString = `${date}T${time}`;
+        const dateClass = new Date(dateTimeString);
+        const now = new Date();
+
+        if(dateClass < now) {
+            addError('La fecha debe ser mayor o igual a la actual');
+            addIdError('date');
+        } 
+
+        if(dateClass > now) removeIdError('date');
+        
         if(!validateOnlyLetters(name)) {
             addError('Solo se admiten letras en el nombre de la clase');
             addIdError('name'); 
@@ -216,6 +259,8 @@ function FormRegisterClass({ classes }: IRegisterClass) {
             "max_members": formValues["max_members"], 
             "photo": responseUrlImg.message,
             "categories": cateogyClassSelected,
+            "date": formValues["date"],
+            "time": formValues["time"],
             "id_type_class_user": 1
         });
         
@@ -225,6 +270,17 @@ function FormRegisterClass({ classes }: IRegisterClass) {
         
         setMessageResponse(responseCreateClass.message);
         showModal('infoResponse');
+
+        if(responseCreateClass.status == 200){
+            setFormValues({
+                "name": "",
+                "description": "",
+                "max_members": "",
+                "photo": "",
+                "date": "",
+                "time": ""
+            });
+        }
 
         return;
     }
@@ -246,8 +302,6 @@ function FormRegisterClass({ classes }: IRegisterClass) {
             </>
         )
     }
-
-
 
     return (
         <>
@@ -310,6 +364,7 @@ function FormRegisterClass({ classes }: IRegisterClass) {
                     maxlength = {250} 
                     rows = {5}
                     cols = {20}
+                    value={formValues.description}
                     required = {true}
                     classes = {hasError('description') ? ['error-class'] : ['normal-class']} 
                     onChange={handleInputOnChange}
@@ -339,6 +394,25 @@ function FormRegisterClass({ classes }: IRegisterClass) {
                     onChange={handleInputOnChange}
                 />
 
+                {
+                    preViewImg && !(preViewImg instanceof ArrayBuffer) ? (
+                        <>
+                            <img src={preViewImg} alt="prevImgClass" />
+
+                            <Button
+                                id = 'clearPhoto'
+                                text = 'Limpiar foto'
+                                classes = {['']}
+                                type = 'button'
+                                onClick = {emptyPhoto}
+                            />
+                        </>
+                    ) : (
+                        <p>Ninguna imagen seleccionada</p>
+                    )
+                }
+
+
                 
                 {
                     allCategoryClass && allCategoryClass.length > 0 ? (
@@ -360,6 +434,29 @@ function FormRegisterClass({ classes }: IRegisterClass) {
                         <p>No hay ninguna categoria</p>
                     )
                 }
+
+                <InputField
+                    id = {'date'}
+                    label = {'Fecha'}
+                    type = {'date'}
+                    name = {'date'}
+                    value={formValues.date}
+                    required = {true}
+                    classes = {hasError('date') ? ['error-class'] : ['normal-class']}
+                    onChange={handleInputOnChange}
+                />
+
+                <InputField
+                    id = {'time'}
+                    label = {'Hora'}
+                    type = {'time'}
+                    name = {'time'}
+                    value={formValues.time}
+                    required = {true}
+                    classes = {hasError('date') ? ['error-class'] : ['normal-class']}
+                    onChange={handleInputOnChange}
+                />
+
                 <Button
                         id = 'btnRegister'
                         text = 'Registrarse'

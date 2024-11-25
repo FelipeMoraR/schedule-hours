@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 
 
-const ViewClass = ({id_class, class_name, description, max_number_member, photo, status_name, type_user, isEditable, categories, allCategories, allStatus, handleBack, deleteClass} : IViewClass) => {
+const ViewClass = ({id_class, class_name, description, max_number_member, photo, status_name, type_user, isEditable, categories, allCategories, allStatus, handleBack, deleteClass, time_class, date_class} : IViewClass) => {
     const [membersClass, setMembersClass] = useState<Array<IMember>>([]);
     const [isLoadingMembers, setIsLoadingMembers] = useState<boolean>(true);
 
@@ -54,7 +54,9 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                     status_name = {status_name}
                     type_user = {type_user}
                     categories = {categories}
-                    members={membersClass}
+                    members = {membersClass}
+                    time_class = {time_class}
+                    date_class = {date_class}
                 />
             </>
         )
@@ -82,6 +84,8 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                 allCategories = {allCategories}
                 allStatus = {allStatus}
                 members={membersClass}
+                time_class = {time_class}
+                date_class = {date_class}
             />
         </>
     )

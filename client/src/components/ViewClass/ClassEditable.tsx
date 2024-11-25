@@ -59,7 +59,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
             reader.readAsDataURL(files);
     }
 
-    const emptyPhoto = () => {
+    const restoreOldPhoto = () => {
         setPreViewImg(photo);
         setFormValues({
             ...formValues,
@@ -265,7 +265,6 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                 "image": imgUri64
             });
 
-            
             const responseUrlImg = await fetchUploadImg(bodyUploadImg);
         
             if(!responseUrlImg) {
@@ -279,7 +278,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
 
             body["new_photo"] = responseUrlImg.message;
         }
-        
+
 
         if(Object.keys(body).length === 1) {
             console.log('No changes');
@@ -401,22 +400,24 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     onChange={handleInputOnChange}
                 />
                 
-                <Button
-                    id = "emptyInput"
-                    text = "Eliminar foto"
-                    classes = {['a']}
-                    onClick = {emptyPhoto}
-                    type = "button"
-
-                />
+                
 
                 {
                     preViewImg && !(preViewImg instanceof ArrayBuffer) ? (
-                        <img src={preViewImg} alt="jeje" />
+                        <>
+                            <Button
+                                id = "restorePhoto"
+                                text = "Restaurar foto incial"
+                                classes = {['a']}
+                                onClick = {restoreOldPhoto}
+                                type = "button"
+                            />
+
+                            <img src={preViewImg} alt="jeje" />
+                        </>
                     ) : null
                 }
                 
-
 
                 <Select
                     id = 'id_status'
@@ -452,7 +453,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                 }
 
                 <Button
-                    id = "emptyInput"
+                    id = "modifyClass"
                     text = "Modificar Clase"
                     classes = {['a']}
                     type = "submit"
@@ -479,7 +480,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                 
             <h1>Miembros</h1>
                 {
-                    members.length > 0 ? (
+                    members && members.length > 0 ? (
                         members.map((member, index) => (
                             <div key={member.id_type_class_user}>
                                 {index + 1} - {member.username}

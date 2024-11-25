@@ -126,6 +126,8 @@ const AllClases = () => {
                             handleBack={handleViewReturnAllClasses}
                             isEditable = {false}
                             categories = {classData.categories}
+                            time_class = {classData.time_class}
+                            date_class = {classData.date_class}
                         />
                     ) : (
                         <h1>Error no se encontró la clase</h1>
