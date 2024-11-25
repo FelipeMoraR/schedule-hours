@@ -197,6 +197,8 @@ const YourClasses = () => {
                                     categories = {classData.categories}
                                     allCategories = {allCategories}
                                     allStatus = {allStatus}
+                                    time_class = {classData.time_class}
+                                    date_class = {classData.date_class}
                                 />
                             ) : (
                                 <h1>Error no se encontró la clase</h1>

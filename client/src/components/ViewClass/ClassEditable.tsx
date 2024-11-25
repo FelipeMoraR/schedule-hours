@@ -21,7 +21,7 @@ import fetchUpdateClass from "../../utils/FetchUpdateClass.ts";
 import fetchUploadImg from "../../utils/FetchUploadImgClodify.ts";
 import { IBodyCreateClass } from "../../interfaces/props"; 
 
-const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members } : IClass) => {
+const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class } : IClass) => {
 
     const id_status_filtered = allStatus?.filter(status => status.name === status_name ).map(status => status.id_status)[0]; //Remember, if you just use one '=' this repleace all name of the obj.
 
@@ -33,6 +33,8 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
         "max_members": max_number_member,
         "photo": "", //This take the name of the file, not the img.
         "id_status": id_status_filtered,
+        "date": date_class,
+        "time": time_class
     });
     const [categorySelected, setCategoryClassSelected] = useState<Array<string>>(id_category_filtered);
     const [preViewImg, setPreViewImg] = useState<string | null | ArrayBuffer>(photo); //What is an ArrayBuffer?
@@ -98,6 +100,11 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
             if (!isSame) bodyCreateClass["new_categories"] = categorySelected;
         } else {
             bodyCreateClass["new_categories"] = categorySelected;
+        }
+
+        if(formValues.date !== date_class || formValues.time !== time_class){
+            bodyCreateClass["new_date"] = formValues.date;
+            bodyCreateClass["new_time"] = formValues.time;
         }
 
 
@@ -184,12 +191,26 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
 
         showModal('loadingForm');
 
-        const statusSesion = await validateSesion();
-
         const errors: string[] = [];
         const addError = (error: string) => errors.push(error);
-        const { name, description, max_members } = formValues;
+        const { name, description, max_members, date, time } = formValues;
 
+
+        if(!date || !time) {
+            addError('Debes ingresar una fecha y su hora');
+            addIdError('date');
+        }
+
+        const dateTimeString = `${date}T${time}`;
+        const dateClass = new Date(dateTimeString);
+        const now = new Date();
+
+        if(dateClass < now) {
+            addError('La fecha debe ser mayor o igual a la actual');
+            addIdError('date');
+        } 
+
+        if(dateClass > now) removeIdError('date');
 
         if(!validateOnlyLetters(name)) {
             addError('Solo se admiten letras en el nombre de la clase');
@@ -243,6 +264,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
         emptyIdError();
         setErrorForm([]);
 
+        const statusSesion = await validateSesion();
 
         if(!statusSesion){
             closeModal(); //Closing loadingForm modal
@@ -259,7 +281,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
         //First parts of the uploadClass body
         const body = bodyCreation();
 
-         
+        
         if (formValues.photo != ""){
             const bodyUploadImg = JSON.stringify({
                 "image": imgUri64
@@ -306,7 +328,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
 
         return
     }
-
+    
     return (
         <>
 
@@ -361,6 +383,30 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     classes = {hasError('name') ? ['error-class'] : ['normal-class']} 
                     onChange={handleInputOnChange}
                 />
+                    date_class
+
+
+                <InputField
+                    id = {'date'}
+                    label = {'Fecha clase'}
+                    type = {'date'}
+                    name = {'date'}
+                    required = {true}
+                    value = {formValues.date}
+                    classes = {hasError('date') ? ['error-class'] : ['normal-class']} 
+                    onChange={handleInputOnChange}
+                />
+
+                <InputField
+                    id = {'time'}
+                    label = {'Hora clase'}
+                    type = {'time'}
+                    name = {'time'}
+                    required = {true}
+                    value = {formValues.time}
+                    classes = {hasError('date') ? ['error-class'] : ['normal-class']} 
+                    onChange={handleInputOnChange}
+                />
 
                 <TextArea
                     id = {'description'}
@@ -403,8 +449,10 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                 
 
                 {
-                    preViewImg && !(preViewImg instanceof ArrayBuffer) ? (
+                    preViewImg  && !(preViewImg instanceof ArrayBuffer) ? (
                         <>
+                        {
+                            preViewImg !== photo ? (
                             <Button
                                 id = "restorePhoto"
                                 text = "Restaurar foto incial"
@@ -412,6 +460,8 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                                 onClick = {restoreOldPhoto}
                                 type = "button"
                             />
+                            ) : null
+                        }
 
                             <img src={preViewImg} alt="jeje" />
                         </>

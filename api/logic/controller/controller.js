@@ -826,7 +826,7 @@ const deleteClass = async (req, res) => {
 }
 
 const uploadClass = async (req, res) => {
-    const { id_class, new_name, new_description, new_max_number_member, new_photo, new_id_status, new_categories } = req.body;
+    const { id_class, new_name, new_description, new_max_number_member, new_photo, new_id_status, new_categories, new_date, new_time } = req.body;
     
     const transaction = await db.sequelize.transaction(); //Transaction starts
 
@@ -935,6 +935,40 @@ const uploadClass = async (req, res) => {
             }
         }
         
+        if (new_date) {
+            const [_, affectedRows] = await db.sequelize.query(`UPDATE CLASS SET date_class = :dateClass WHERE id_class = :id_class `, {
+                replacements: {
+                    dateClass: new_date,
+                    id_class: parseInt(id_class)
+                },
+                type: db.Sequelize.QueryTypes.UPDATE,
+                transaction
+            });
+
+            if(affectedRows > 0){
+                messageRes += 'Date changed. '
+            } else {
+                messageRes += 'Date notChanged because is the same value in db but you send it the value. '
+            }
+        }
+
+
+        if (new_time) {
+            const [_, affectedRows] = await db.sequelize.query(`UPDATE CLASS SET time_class = :timeClass WHERE id_class = :id_class `, {
+                replacements: {
+                    timeClass: new_time,
+                    id_class: parseInt(id_class)
+                },
+                type: db.Sequelize.QueryTypes.UPDATE,
+                transaction
+            });
+
+            if(affectedRows > 0){
+                messageRes += 'Time class changed. '
+            } else {
+                messageRes += 'Time class not changed notChanged because is the same value in db but you send it the value. '
+            }
+        }
         
         if(!Array.isArray(new_categories) && new_categories) {
             await transaction.rollback();

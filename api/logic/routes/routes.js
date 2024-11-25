@@ -29,7 +29,7 @@ router.delete('/delete-class/:id', midleWareVerifyToken, deleteClass);
 router.put('/upload-class', midleWareVerifyToken, uploadClass);
 router.get('/all-status-class',midleWareVerifyToken, getAllStatusClass);
 router.get('/members-class', midleWareVerifyToken, getAllMembersClass);
-router.get('/remove-member-class', removeMemberClass);
+router.get('/remove-member-class',midleWareVerifyToken, removeMemberClass);
 
 
 

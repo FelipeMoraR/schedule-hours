@@ -194,4 +194,6 @@ export interface IBodyCreateClass {
     new_photo?: string;
     new_id_status?: string,
     new_categories?: Array<string>;
+    new_date?: string;
+    new_time?: string;
 }
