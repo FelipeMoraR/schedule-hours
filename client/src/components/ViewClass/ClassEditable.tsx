@@ -4,7 +4,6 @@ import Button from "../Button/Button";
 import InputField from '../InputField/InputField';
 import TextArea from '../TextArea/TextArea';
 import convertBase64 from "../../utils/decodeImageBase64";
-import Select from "../Select/Select";
 import { useModal } from '../../utils/UseModal.ts';
 import Modal from '../Modal/Modal.tsx';
 import { 
@@ -20,6 +19,9 @@ import validateSesion from '../../utils/SesionValidator.ts';
 import fetchUpdateClass from "../../utils/FetchUpdateClass.ts";
 import fetchUploadImg from "../../utils/FetchUploadImgClodify.ts";
 import { IBodyCreateClass } from "../../interfaces/props"; 
+import fetchCancellClass from "../../utils/FetchCancellClass.ts";
+
+
 
 const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class } : IClass) => {
 
@@ -90,9 +92,6 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
             bodyCreateClass["new_max_number_member"] = formValues.max_members.toString();
         }
 
-        if(formValues.id_status?.toString() !== id_status_filtered?.toString()) {
-            bodyCreateClass["new_id_status"] = formValues?.id_status?.toString();
-        }
 
         if(categorySelectedSorted.length === idCategoryFilteredSorted.length) {
             const isSame = categorySelectedSorted.every((value, index) => value === idCategoryFilteredSorted[index]);
@@ -311,9 +310,11 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
             return
         }
 
+        body['new_id_status'] = '5'; //If a chage is made it this is the id of the new status "modified"
         
         const formatBody = JSON.stringify(body);
         console.log(formatBody); 
+
 
         
         const response = await fetchUpdateClass(formatBody);
@@ -328,11 +329,35 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
 
         return
     }
+
+    const handleCancellClass = async() => {
+        const bodyParsedCancellClass = JSON.stringify({
+            "id_class": id_class
+        });
+
+        const result = await fetchCancellClass(bodyParsedCancellClass);
+
+        if(!result){
+            console.log('Error fetchCancellClass');
+            return
+        }
+
+        console.log(result.message);
+
+        setFormValues({
+            ...formValues,
+            ['id_status']: 3
+        });
+
+        showModal('infoResponse');
+        setMessageResponse('Class cancelled');
+        
+        return
+    }
     
     return (
         <>
-
-        <Modal 
+            <Modal 
                 id = 'loadingForm'
                 type = 'loader'
                 title = 'loadingForm'
@@ -468,18 +493,6 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     ) : null
                 }
                 
-
-                <Select
-                    id = 'id_status'
-                    name = 'id_status'
-                    values = {allStatus ? (allStatus): ([])}
-                    keyValue = "id_status"
-                    keyName = "name"
-                    onChange = {handleInputOnChange}
-                    selectedValue = {formValues.id_status}
-                />
-
-
                 {
                     allCategories && allCategories.length > 0 ? (
                         allCategories.map((cat) => ( //This structure of map dont need a return because this sintaxis implicity say it
@@ -509,8 +522,11 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     type = "submit"
                 />
 
+            </form>
 
-                {
+            
+
+            {
                     deleteClass ? (
                         <div>
                             <Button
@@ -526,8 +542,23 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                         </div>
                     ) : null
                 }
-            </form>
+
+                {
+                    formValues.id_status == 3 ? (
+                        <p>Clase cancelada!!</p>
+                    ) : (
+                        <Button
+                            id = 'cancellClass'
+                            text = 'Cancelar clase'
+                            type = 'buttom'
+                            classes = {['btn-cancel']}
+                            onClick = {handleCancellClass}
+                        />
+                    )
+                }
                 
+            
+
             <h1>Miembros</h1>
                 {
                     members && members.length > 0 ? (

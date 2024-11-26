@@ -653,7 +653,7 @@ const getClassCategory = async (classes) => {
 const getAllClasses = async (req, res) => {
     try{
         let { page = 1, limit = 3 , idUser} = req.query;
-        
+
         if(!page){
             console.log('No page, setting default page');
             page = 1;
@@ -665,6 +665,8 @@ const getAllClasses = async (req, res) => {
         }
 
         const offset = (page - 1) * limit;
+
+        console.log('offset => ', offset);
 
         let query = `
                 SELECT 
@@ -683,9 +685,11 @@ const getAllClasses = async (req, res) => {
 
         const replacements = {};
         if(idUser) {
-            query += `WHERE cu.id_user = :idUser `;
+            query += `WHERE cu.id_user = :idUser AND STR_TO_DATE(CONCAT(c.date_class, ' ', c.time_class), '%Y-%m-%d %H:%i:%s') > NOW() AND s.id_status != 2 `;
             replacements.idUser = parseInt(idUser);
         }
+
+        if(!idUser) query += ` WHERE STR_TO_DATE(CONCAT(c.date_class, ' ', c.time_class), '%Y-%m-%d %H:%i:%s') > NOW() AND s.id_status != 2 `;
 
         // Adding Limit and offset in a safe way
         query += ` GROUP BY c.id_class LIMIT :limit OFFSET :offset`;
@@ -696,6 +700,7 @@ const getAllClasses = async (req, res) => {
             replacements,
             type: db.Sequelize.QueryTypes.SELECT,
         });
+
         
         if (classes.length == 0) return res.status(404).json({status: 404, message: 'Classes not founded'});
 
@@ -823,6 +828,41 @@ const deleteClass = async (req, res) => {
         console.error(err);
         return res.status(500).json({status: 500, message: 'Something went wrong ' + err });
     }
+}
+
+const cancellClass = async (req, res) => {
+    const { id_class } = req.body;
+
+    if(!id_class) return res.status(404).json({status: 404, message: 'Id class not provided'});
+
+    const transaction = await db.sequelize.transaction(); //Transaction starts
+
+    try{
+        const [_, affectedRows] = await db.sequelize.query('UPDATE CLASS SET id_status = 3 WHERE id_class = :id_class',{
+            replacements: {
+                id_class: parseInt(id_class)
+            },
+            transaction,
+            type: db.Sequelize.QueryTypes.UPDATE
+        });
+
+        if(affectedRows > 0){
+            console.log('Class cancelled!');
+            await transaction.commit(); // Made the upload in DB
+
+            return res.status(200).json({status: 200, message: 'Class cancelled'});
+        }
+
+        await transaction.rollback();
+
+        return res.status(304).json({status: 304, message: 'Class not modified'});
+
+    } catch (err) {
+        await transaction.rollback();
+        console.error('Error cancelling class => ' + err);
+        return res.status(500).json({status: 500, message: 'Error cancelling class ' + err});
+    }
+    
 }
 
 const uploadClass = async (req, res) => {
@@ -1107,5 +1147,6 @@ module.exports = {
     uploadClass,
     getAllStatusClass,
     getAllMembersClass,
-    removeMemberClass
+    removeMemberClass,
+    cancellClass
 }
