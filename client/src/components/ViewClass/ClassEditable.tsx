@@ -24,9 +24,6 @@ import { IBodyCreateClass } from "../../interfaces/props";
 const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class, handleCancellClass } : IClass) => {
     
 
-
-    console.log('status name => ', status_name);
-
     const id_status_filtered = allStatus?.filter(status => status.name === status_name ).map(status => status.id_status)[0]; //Remember, if you just use one '=' this repleace all name of the obj.
 
     const id_category_filtered = categories?.map(cat => cat.id_category.toString());
