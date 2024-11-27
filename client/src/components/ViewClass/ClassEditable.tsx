@@ -19,11 +19,13 @@ import validateSesion from '../../utils/SesionValidator.ts';
 import fetchUpdateClass from "../../utils/FetchUpdateClass.ts";
 import fetchUploadImg from "../../utils/FetchUploadImgClodify.ts";
 import { IBodyCreateClass } from "../../interfaces/props"; 
-import fetchCancellClass from "../../utils/FetchCancellClass.ts";
 
 
+const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class, handleCancellClass } : IClass) => {
+    
 
-const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class } : IClass) => {
+
+    console.log('status name => ', status_name);
 
     const id_status_filtered = allStatus?.filter(status => status.name === status_name ).map(status => status.id_status)[0]; //Remember, if you just use one '=' this repleace all name of the obj.
 
@@ -330,30 +332,6 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
         return
     }
 
-    const handleCancellClass = async() => {
-        const bodyParsedCancellClass = JSON.stringify({
-            "id_class": id_class
-        });
-
-        const result = await fetchCancellClass(bodyParsedCancellClass);
-
-        if(!result){
-            console.log('Error fetchCancellClass');
-            return
-        }
-
-        console.log(result.message);
-
-        setFormValues({
-            ...formValues,
-            ['id_status']: 3
-        });
-
-        showModal('infoResponse');
-        setMessageResponse('Class cancelled');
-        
-        return
-    }
     
     return (
         <>
@@ -544,7 +522,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                 }
 
                 {
-                    formValues.id_status == 3 ? (
+                    formValues.id_status == 3 || status_name == 'cancelled' ? (
                         <p>Clase cancelada!!</p>
                     ) : (
                         <Button
@@ -552,7 +530,10 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                             text = 'Cancelar clase'
                             type = 'buttom'
                             classes = {['btn-cancel']}
-                            onClick = {handleCancellClass}
+                            onClick = {() => {
+                                if(handleCancellClass) handleCancellClass(id_class);
+                                    
+                            }}
                         />
                     )
                 }

@@ -2,7 +2,6 @@ import styles from './AllClassesView.module.css';
 import { IViewAllClases } from '../../interfaces/props';
 import Button from '../Button/Button';
 
-
 const ViewAllClasses = ({allClasses, type_user, isEditable, handleViewClass, deleteClass} : IViewAllClases) => {
     return(
         <>

@@ -136,6 +136,7 @@ export interface IClass {
     time_class?: string;
     date_class?: string;
     deleteClass? : (id_class: number) => void;
+    handleCancellClass? : (id_class: number) => void;
 }
 
 export interface IViewClass {
@@ -154,6 +155,7 @@ export interface IViewClass {
     allStatus? : Array<IStatusClass>;
     handleBack?: () => void;
     deleteClass? : (id_class: number) => void;
+    handleCancellClass?: (id_class: number) => void;
 }
 
 export interface IViewAllClases{

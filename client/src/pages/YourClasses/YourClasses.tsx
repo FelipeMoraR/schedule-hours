@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import ViewClass from "../../components/ViewClass/ViewClass";
 import fetchGetAllCategoryClass from "../../utils/FetchGetAllCategoryClass";
 import fetchGetAllStatusClasses from "../../utils/FetchGetAllStatusClasses";
+import fetchCancellClass from "../../utils/FetchCancellClass";
 
 const YourClasses = () => {
     const [isLoadingGetClasses, setIsLoadingGetClasses] = useState<boolean>(true);
@@ -77,6 +78,40 @@ const YourClasses = () => {
         
         return
     }  
+
+    const handleCancellClass = async(id_class: number) => {
+        const bodyParsedCancellClass = JSON.stringify({
+            "id_class": id_class
+        });
+
+        const result = await fetchCancellClass(bodyParsedCancellClass);
+
+        if(!result){
+            console.log('Error fetchCancellClass');
+            return
+        }
+
+        if(classData) {
+            setClassData({
+                ...classData,
+                ['status_name']: 'cancelled'
+            })
+        }
+
+        let classCancelled = allClasses.find(item => item.id_class == id_class);
+
+        
+        if(classCancelled) {
+            classCancelled.status_name = 'cancelled' //For some reason this upload the hook allClasses?
+        };
+        
+        
+        console.log(result.message);
+
+        return
+    }
+
+
 
 
     const handlerFetchGetClasses = async () => {
@@ -162,7 +197,9 @@ const YourClasses = () => {
 
     }, [isLoadingGetClasses, isLoadingGetAllCategories]);
 
-
+    useEffect(() => {
+        console.log('allClasses => ', allClasses);
+    }, [allClasses])
 
     if(isLoadingGetClasses || isLoadingGetAllCategories || isLoadingGetAllStatus){
         return(
@@ -199,6 +236,7 @@ const YourClasses = () => {
                                     allStatus = {allStatus}
                                     time_class = {classData.time_class}
                                     date_class = {classData.date_class}
+                                    handleCancellClass = {handleCancellClass}
                                 />
                             ) : (
                                 <h1>Error no se encontró la clase</h1>

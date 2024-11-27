@@ -732,6 +732,7 @@ const getTotalCountClasses = async (req, res) => {
 		            CLASS c 
 	            JOIN 
 		            CLASS_USER cu ON c.id_class = cu.id_class
+                WHERE STR_TO_DATE(CONCAT(c.date_class, ' ', c.time_class), '%Y-%m-%d %H:%i:%s') > NOW() AND s.id_status != 2 
             )
 
             SELECT COUNT(*) AS totalItems
