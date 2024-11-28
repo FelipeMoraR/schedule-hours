@@ -2,6 +2,7 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('../../models/index');
+const cron = require('node-cron');
 const secret = process.env.JWT_SECRET;
 const cloudinary = require('cloudinary').v2;
 
@@ -26,6 +27,17 @@ const opts = {
 }; 
 
 
+cron.schedule('*/15 * * * *', async () => {
+    try{
+        const [_, rowsAffected] =  await db.sequelize.query(`UPDATE CLASS SET id_status = 2 WHERE CONCAT(date_class, ' ', time_class) < NOW() AND id_status != 2`,{
+            type: db.Sequelize.QueryTypes.UPDATE
+        });
+
+        console.log('status classes changed to expired!, rows affected => ', rowsAffected);
+    } catch (err) {
+        console.error('Error CRON changing class status ' + err);
+    }
+});
 
 const insertCategoryClass = async (id_class, categories) => {
     try{
@@ -42,7 +54,7 @@ const insertCategoryClass = async (id_class, categories) => {
         }));
         return true;
     } catch(err){
-        console.error('Something went wrong ' + err);
+        console.error('Something went wrong insertCategoryClass:: ' + err);
         return false;
     }
 };
@@ -70,6 +82,7 @@ const resUploadCloudImg = (req, res) => {
             .catch((err) => res.status(500).json({status: 500, message: err}))
     }
     catch(err){
+        console.error('Error resUploadCloudImg:: ', err);
         return res.status(500).json({status: 500, message: 'Something went wrong'});
     }
 };
@@ -138,19 +151,19 @@ const createTypeUser = async(req, res) => {
     }
 
     catch (err){
-        console.error(err);
+        console.error('Error createTypeUser:: ' + err);
         return res.status(500).json({ status: 500, error: 'Something went wrong'})
     }
 }
 
 //using it
-const cookieValidator = async(req, res) => {
+const cookieValidator = async(_, res) => {
     return res.send({ status: 200, message: 'Token is valid'}); 
 }
 
 //using it
 const midleWareVerifyToken = async (req, res, next) => {
-    console.log('Ejecutando middleware');
+    console.log('Ejecutando middleware, FIX MEEEEEE PLEASE I NEED FKIN HELP BRO PLEASE DONT FORGET ME');
     try{
         const authToken = req.cookies.token;
         
@@ -179,8 +192,8 @@ const midleWareVerifyToken = async (req, res, next) => {
         })
     }
     catch (err) {
-        console.error(err);
-        return res.status(500).json({ status: 500, error: 'Something went wrong'})
+        console.error('Error midleWareVerifyToken:: ' + err);
+        return res.status(500).json({ status: 500, error: 'Something went wrong ' + err});
     }
 }
 
@@ -220,13 +233,14 @@ const registerUser = async (req, res) => {
         if (user_created === 1){
             return res.status(201).json({ status: 201, message: 'User created!'});
         } else {
+            console.error('Error registerUser:: ' + errors_register);
             return res.status(409).json({ status: 409, message: errors_register});
         }
         
     }
     
     catch (err) {
-        console.error(err);
+        console.error('Error registerUser:: ' + err);
         return res.status(500).json({ status: 500, error: 'Something went wrong'})
     }
     
@@ -311,7 +325,7 @@ const loginUser = async (req, res) => {
         });
     }    
     catch (err) {
-        console.error(err);
+        console.error('Error loginUser:: ' + err);
         return res.status(500).json({ status: 500, error: 'Something went wrong'})
     }
 }
@@ -356,7 +370,7 @@ const logoutUser = async (req, res) => {
         
     }
     catch (err) {
-        console.error(err);
+        console.error('Error logoutUser ' + err);
         return res.status(500).json({ status: 500, error: 'Something went wrong'})
     }
     
@@ -381,7 +395,7 @@ const removeCookie = async (req, res) => {
         json({status: 200, message: "cookie removed"});
         } 
     catch (e){
-        console.log('Something went wrong', e);
+        console.log('Something went wrong removeCookie:: ', e);
         return res.status(500).json({status: 500, message: 'Someting went wront' + e});
     }
     
@@ -411,7 +425,7 @@ const insertTokenBlackList = async (req, res) => {
         }
     }
     catch (e){
-        console.log('Something went wrong', e);
+        console.log('Something went wrong insertTokenBlackList:: ', e);
         return res.status(500).json({status: 500, message: 'Someting went wront' + e});
     }
 }
@@ -451,7 +465,7 @@ const getUserData = async (req, res) => {
     }
 
     catch (e){ 
-        console.log('Something went wrong', e);
+        console.log('Something went wrong getUserData::', e);
         return res.status(500).json({status: 500, message: 'Someting went wront' + e});
     }
 }
@@ -528,7 +542,7 @@ const refreshToken = async (req, res) => {
         });
 
     } catch (err){
-        console.error('Something went wrong, ' + err);
+        console.error('Something went wrong refreshToken:: ' + err);
         return res.status(500).json({status: 500, message: 'something went wrong updating token' + err});
     }
 }
@@ -555,7 +569,7 @@ const createStatusClass = async (req, res) => {
         }
     }
     catch (e) {
-        console.log('Something went wrong', e);
+        console.log('Something went wrong createStatusClass:: ', e);
         return res.status(500).json({status: 500, message: 'Someting went wront' + e});
     }
 }
@@ -602,7 +616,7 @@ const createClass = async (req, res) => {
         return res.status(500).json({status: 500, message: 'Something went wrong, class not created'});
     }
     catch(err){
-        console.log('Something went wrong ' + err);
+        console.log('Something went wrong createClass:: ' + err);
         return res.status(500).json({status: 500, message: 'Error: ' + err});
     }    
 }   
@@ -640,7 +654,7 @@ const getClassCategory = async (classes) => {
                 })
             );
         } catch(err){
-            console.error('Error extracting class category ' + err);
+            console.error('Error extracting class category getClassCategory:: ' + err);
             return false
         }
         
@@ -695,7 +709,7 @@ const getAllClasses = async (req, res) => {
         query += ` GROUP BY c.id_class LIMIT :limit OFFSET :offset`;
         replacements.limit = parseInt(limit);
         replacements.offset = parseInt(offset);
-
+        
         const classes = await db.sequelize.query(query, {
             replacements,
             type: db.Sequelize.QueryTypes.SELECT,
@@ -712,7 +726,7 @@ const getAllClasses = async (req, res) => {
         return res.status(200).json({status: 200, message: 'Success', data: listClasses});
     }
     catch(err){
-        console.error('Something went wrong ' + err);
+        console.error('Something went wrong getAllClasses:: ' + err);
         return res.status(500).json({status: 500, message: 'Error ' + err})
     }
 };
@@ -730,8 +744,8 @@ const getTotalCountClasses = async (req, res) => {
                     ROW_NUMBER() OVER (PARTITION BY c.id_class ORDER BY c.id_class) AS row_num
 	            FROM 
 		            CLASS c 
-	            JOIN 
-		            CLASS_USER cu ON c.id_class = cu.id_class
+				JOIN CLASS_USER cu ON c.id_class = cu.id_class
+				JOIN STATUS s ON c.id_status = s.id_status
                 WHERE STR_TO_DATE(CONCAT(c.date_class, ' ', c.time_class), '%Y-%m-%d %H:%i:%s') > NOW() AND s.id_status != 2 
             )
 
@@ -759,7 +773,7 @@ const getTotalCountClasses = async (req, res) => {
         return res.status(200).json({status: 200, totalItems: totalItems});
     }
     catch(err){
-        console.error('Error ' + err);
+        console.error('Error getTotalCountClasses ' + err);
         return res.status(500).json({status: 500, message: 'Error ' + err});
     }
     
@@ -1013,6 +1027,7 @@ const uploadClass = async (req, res) => {
         
         if(!Array.isArray(new_categories) && new_categories) {
             await transaction.rollback();
+            console.error('Error uploadClass:: categories must be an array');
             return res.status(415).json({status: 415, message: 'Categories must be an array.'})
         }
 
@@ -1051,7 +1066,7 @@ const uploadClass = async (req, res) => {
             } catch (err) {
                 await transaction.rollback();
                 console.log('Rollback in the categories insert');
-                console.error(err);
+                console.error('Error uploadClass:: ' + err);
                 return res.status(500).json({status: 500, message: 'Error inserting categories'});
             }
         }
@@ -1066,7 +1081,7 @@ const uploadClass = async (req, res) => {
     } catch (err){
         await transaction.rollback();
         console.log('External transaction.rollback');
-        console.log(err);
+        console.log('Error uploadClass:: ' + err);
         return res.status(500).json({status: 500, message: 'Error uploading class ' + err});
     }
 }
@@ -1089,7 +1104,7 @@ const getAllMembersClass = async (req, res) => {
         return res.status(200).json({status: 200, data: result});
 
     } catch(err){
-        console.log('Something wrong happend ' + err);
+        console.log('Something wrong happend getAllMembersClass:: ' + err);
         return res.status(500).json({status: 500, message: 'Something went wrong ' + err});
     }
 }
@@ -1120,10 +1135,11 @@ const removeMemberClass = async (req, res) => {
         return res.status(200).json({status: 200, message: 'User removed'});
         
     } catch(err){
-        console.error('Somethin went wrong ' + err);
+        console.error('Somethin went wrong removeMemberClass:: ' + err);
         return res.status(500).json({status: 500, message: 'Something went wrong ' + err});
     }
 }
+
 
 
 

@@ -111,9 +111,6 @@ const YourClasses = () => {
         return
     }
 
-
-
-
     const handlerFetchGetClasses = async () => {
         const getClasses = await fetchGetAllClasses(String(page), '3', userData.id_user);
         
@@ -154,6 +151,7 @@ const YourClasses = () => {
     }; // Math.max(prev - 1, 1) enshure prev never will be less than 0
 
     useEffect(() => {
+        console.log('Entra a esta vaina allClasses => ', allClasses);
         const handlerFunctionFetchs = async () => {
             setIsLoadingGetClasses(true);
             await handlerFetchGetClasses();
@@ -197,23 +195,17 @@ const YourClasses = () => {
 
     }, [isLoadingGetClasses, isLoadingGetAllCategories]);
 
-    useEffect(() => {
-        console.log('allClasses => ', allClasses);
-    }, [allClasses])
-
     if(isLoadingGetClasses || isLoadingGetAllCategories || isLoadingGetAllStatus){
         return(
             <h1>Cargando clases!</h1>
         )
     }
-    
-    if(allClasses.length < 0 || allCategories.length < 0 || allStatus.length < 0) {
-        return (
-            <h1>Error al cargar las clases :(</h1>
+
+    if(!allClasses || !allCategories || !allStatus ){
+        return(
+            <h1>No tienes clases</h1>
         )
     }
-
-    
 
     if(typeView == 'viewDetail') {
         return(

@@ -54,7 +54,7 @@ const ClassNotEditable = ({ id_class, class_name, description, max_number_member
                 }
 
                 {
-                    type_user == 2  ? (
+                    type_user == 2  && status_name == 'open' ? (
                         <div>
                             <button>Unirme</button>
                         </div>
