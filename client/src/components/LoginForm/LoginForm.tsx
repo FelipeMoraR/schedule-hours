@@ -1,14 +1,14 @@
 import Button from '../../components/Button/Button';
 import InputField from '../../components/InputField/InputField';
 import Modal from '../../components/Modal/Modal';
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { useModal } from '../../utils/UseModal';
 import { useAuthContext } from '../../hooks/authContext';
 
 
 function LoginForm ()  {
     const { closeModal } = useModal();
-    const { login, errorLoged, isLoadingLogin } = useAuthContext();
+    let { login, errorLoged, isLoadingLogin, handleErrorLoged } = useAuthContext();
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
 
@@ -34,6 +34,11 @@ function LoginForm ()  {
         }
     }
 
+    useEffect(() => {
+       if(errorLoged != '') handleErrorLoged('');
+    }, []);
+    
+
     return(
         <>              
             <Modal
@@ -41,7 +46,7 @@ function LoginForm ()  {
                 type = 'loader'
                 title = 'LOADING LOGIN...'
                 isOpen = {isLoadingLogin}
-                classes = {['modal-infomative-grey']}
+                classes = {['modal-loader-grey']}
                 onClose={closeModal}
             />
             

@@ -5,6 +5,8 @@ import { validateOnlyNumberLetters, validateMaxLengthInput, validateMinLengthInp
 import removeCookie from '../utils/RemoveCookie.ts';
 import fetchRefreshToken from '../utils/FetchRefreshCookie.ts';
 import fetchVerifyToken from '../utils/FetchVerifyToken.ts';
+import { useModal } from '../utils/UseModal.ts';
+import Modal from '../components/Modal/Modal.tsx';
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
@@ -98,6 +100,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isFromOtherPage, setIsFromOtherPage] = useState<boolean>(false);
     const [userData, setUserData] = useState<any>(null);
+    const { closeModal } = useModal();
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -106,6 +109,10 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const handleIsFromOtherPage = () => {
         setIsFromOtherPage(true);
     }
+
+    const handleErrorLoged = (value: string) => {
+        setLogedError(value);
+    }   
 
     const verfyToken = async () => {
         setIsLoadingVerifyCookie(true);
@@ -149,6 +156,8 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const login = async (username: string, password: string) => {
         setIsLoadingLogin(true);
 
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         const formatUsernameIsValid = validateOnlyNumberLetters(username);
         const maxLengthUsernameIsValid = validateMaxLengthInput(username, 10);
         const minLengthUsernameIsValid = validateMinLengthInput(username, 4);
@@ -275,7 +284,8 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         userData,
         login,
         logout,
-        handleIsFromOtherPage
+        handleIsFromOtherPage,
+        handleErrorLoged
     };
     
 
@@ -290,20 +300,32 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
 
     if(isLoadingVerifyCookie) {
         return(
-            <h1>Loading COOKIEEE....</h1>
+            <Modal
+                id = 'loaderLogin'
+                type = 'loader'
+                title = 'Loading verify cookie'
+                isOpen = {true}
+                classes = {['modal-loader-grey']}
+                onClose={closeModal}
+            />
         )
     }
 
     if(isAuthenticated && !userData){
         return(
-            <h1>Loading user data...</h1>
+            <Modal
+                id = 'loaderLogin'
+                type = 'loader'
+                title = 'Loading user data'
+                isOpen = {true}
+                classes = {['modal-loader-grey']}
+                onClose={closeModal}
+            />
         )
     }
 
     if(isFromOtherPage){
-        return(
-            <h1>Es de otra pagina</h1>
-        )
+        return
     }
     
     console.log('contex rendered');

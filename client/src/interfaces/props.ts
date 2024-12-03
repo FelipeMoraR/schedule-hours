@@ -9,6 +9,7 @@ export interface IAuthContextType {
     login: (username: string, password:string) => void;
     logout: () => void;
     handleIsFromOtherPage: () => void;
+    handleErrorLoged: (value: string) => void;
 }
 
 export interface IPublicRouteProps {
