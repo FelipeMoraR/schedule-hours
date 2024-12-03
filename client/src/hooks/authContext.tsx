@@ -94,14 +94,19 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const [errorLoged, setLogedError] = useState<string>('');
     const [isLoadingLogin, setIsLoadingLogin] = useState<boolean>(false);
     const [isLoadingLogout, setIsLoadingLogout] = useState<boolean>(false);
-    const [isLoadingVerifyCookie, setIsLoadingVerifyCookie] = useState<boolean>(true);
+    const [isLoadingVerifyCookie, setIsLoadingVerifyCookie] = useState<boolean>(false);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [isFromOtherPage, setIsFromOtherPage] = useState<boolean>(false);
     const [userData, setUserData] = useState<any>(null);
 
     const navigate = useNavigate();
     const location = useLocation();
     const from = location.state?.from?.pathname || '/';
     
+    const handleIsFromOtherPage = () => {
+        setIsFromOtherPage(true);
+    }
+
     const verfyToken = async () => {
         setIsLoadingVerifyCookie(true);
         
@@ -141,7 +146,6 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         return false
     }
     
-
     const login = async (username: string, password: string) => {
         setIsLoadingLogin(true);
 
@@ -219,6 +223,49 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         setIsAuthenticated(false);
     }
 
+
+    const checkTokenLoged = async () => {
+        try{
+            
+            setIsLoadingVerifyCookie(true);
+            
+            if(isFromOtherPage){
+                setIsFromOtherPage(false);
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500)); //To controll the petitions to the backend.
+            
+            const statusRefreshToken = await fetchRefreshToken();
+            
+            //With those if we control de petitions of the backend to optimized resources.
+            if(statusRefreshToken){
+                setIsAuthenticated(true);  
+            } 
+
+            if(!statusRefreshToken && isAuthenticated){ 
+                await verfyToken(); 
+            }
+
+            setIsLoadingVerifyCookie(false);
+        }
+        catch(err){
+            console.error('Something went wrong ' + err);
+            return
+        }
+    }
+
+
+    const localGetUser = async () => {
+        if(isAuthenticated){
+            const dataUser = await fetchGetUser();
+            if(dataUser !== null){
+                console.log(dataUser);
+                setUserData(dataUser);
+            }
+                
+        }
+    }
+
     const value = {
         errorLoged,
         isLoadingLogin,
@@ -227,49 +274,16 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         isAuthenticated,
         userData,
         login,
-        logout
+        logout,
+        handleIsFromOtherPage
     };
     
+
     useEffect(() => {
-        const checkTokenLoged = async () => {
-            try{
-                setIsLoadingVerifyCookie(true);
-                
-                await new Promise(resolve => setTimeout(resolve, 500)); //To controll the petitions to the backend.
-                
-                const statusRefreshToken = await fetchRefreshToken();
-                //With those if we control de petitions of the backend to optimized resources.
-                if(statusRefreshToken){
-                    setIsAuthenticated(true);  
-                } 
-
-                if(!statusRefreshToken && isAuthenticated){ 
-                    await verfyToken(); 
-                }
-
-                setIsLoadingVerifyCookie(false);
-            }
-            catch(err){
-                console.error('Something went wrong ' + err);
-                return
-            }
-        }
-    
-        checkTokenLoged();
+        checkTokenLoged();    
     }, [location]);
 
     useEffect(() => {
-        const localGetUser = async () => {
-            if(isAuthenticated){
-                const dataUser = await fetchGetUser();
-                if(dataUser !== null){
-                    console.log(dataUser);
-                    setUserData(dataUser);
-                }
-                    
-            }
-        }
-
         localGetUser();
     }, [isAuthenticated]);
 
@@ -285,6 +299,14 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
             <h1>Loading user data...</h1>
         )
     }
+
+    if(isFromOtherPage){
+        return(
+            <h1>Es de otra pagina</h1>
+        )
+    }
+    
+    console.log('contex rendered');
 
     return (
         <AuthContext.Provider value={value}>

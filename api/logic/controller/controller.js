@@ -665,6 +665,7 @@ const getClassCategory = async (classes) => {
 
 
 const getAllClasses = async (req, res) => {
+    
     try{
         let { page = 1, limit = 3 , idUser} = req.query;
 

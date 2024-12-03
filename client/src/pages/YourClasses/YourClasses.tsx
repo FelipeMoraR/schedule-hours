@@ -15,6 +15,7 @@ import fetchGetAllStatusClasses from "../../utils/FetchGetAllStatusClasses";
 import fetchCancellClass from "../../utils/FetchCancellClass";
 
 const YourClasses = () => {
+    
     const [isLoadingGetClasses, setIsLoadingGetClasses] = useState<boolean>(true);
     const [isLoadingGetAllCategories, setIsLoadingGetAllCategories] = useState<boolean>(true);
     const [isLoadingGetAllStatus, setIsLoadingGetAllStatus] = useState<boolean>(true);
@@ -206,6 +207,8 @@ const YourClasses = () => {
             <h1>No tienes clases</h1>
         )
     }
+
+    
 
     if(typeView == 'viewDetail') {
         return(

@@ -101,7 +101,6 @@ const AllClases = () => {
         handlerFetchCountClasses();
     }, [page]);
 
-
     
     if(isLoadingGetClasses){
         return(

@@ -7,11 +7,12 @@ import NavBarButtomsAuth from './NavBarButtomsAuth';
 
 function NavBar() {
     const navigate = useNavigate();
-    const { isAuthenticated, logout, userData } = useAuthContext();
+    const { isAuthenticated, logout, userData, handleIsFromOtherPage } = useAuthContext();
     const location = useLocation();
-    
     const handleButton = (event: React.MouseEvent<HTMLButtonElement>) => {
         const { id } = event.target as HTMLButtonElement;
+        
+        handleIsFromOtherPage();
         handlerNavigationNavBar(id, navigate);
     }
 
