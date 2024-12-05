@@ -120,7 +120,9 @@ export interface IAllClasses {
 
 export interface IMember {
     id_type_class_user: number;
-    username: string;   
+    username: string;  
+    id_status_class_user: number;
+    id_user: number; 
 }
 
 export interface IClass {

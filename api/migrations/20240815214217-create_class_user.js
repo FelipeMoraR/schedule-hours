@@ -37,6 +37,15 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL'
       },
+      id_status_class_user: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'STATUS_CLASS_USER', // Table name for the reference
+          key: 'id_status_class_user'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

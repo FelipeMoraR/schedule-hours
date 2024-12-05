@@ -45,7 +45,7 @@ const ClassNotEditable = ({ id_class, class_name, description, max_number_member
                     members && members.length > 0 ? (
                         members.map((member, index) => (
                             <div key={member.id_type_class_user}>
-                                {index + 1} - {member.username}
+                                {index + 1} - {member.username} - {member.id_status_class_user == 1 ? 'Enrolado' : 'Pendiente...'}
                             </div>
                         ))
                     ) : (

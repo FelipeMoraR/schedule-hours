@@ -19,7 +19,7 @@ import validateSesion from '../../utils/SesionValidator.ts';
 import fetchUpdateClass from "../../utils/FetchUpdateClass.ts";
 import fetchUploadImg from "../../utils/FetchUploadImgClodify.ts";
 import { IBodyCreateClass } from "../../interfaces/props"; 
-
+import fetchRemoveMemberClass from "../../utils/FetchRemoveMemberClass.ts";
 
 const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class, handleCancellClass } : IClass) => {
     
@@ -329,6 +329,19 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
         return
     }
 
+    const handleEnrollUser = async (idUser: number) => {
+        console.log(idUser);
+    }
+
+    const handleDeleteUserClass = async (idUser: number, idClass: number) => {
+        const parsedIdUser = idUser.toString();
+        const parsedIdClass = idClass.toString();
+    
+        const result = await fetchRemoveMemberClass(parsedIdUser, parsedIdClass);
+
+        console.log(result);
+    }
+
     
     return (
         <>
@@ -542,12 +555,38 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     members && members.length > 0 ? (
                         members.map((member, index) => (
                             <div key={member.id_type_class_user}>
-                                {index + 1} - {member.username}
+                                
+                                {index + 1} - {member.username} - {member.id_status_class_user == 1 ? 'Enrolado' : 'Pendiente...'}
+                                
                                 {   
                                     member.id_type_class_user !== 1 ? (
-                                        <button>Eliminar</button>
+                                        <Button
+                                            id = 'cancellClass'
+                                            text = 'Eliminar '
+                                            type = 'buttom'
+                                            classes = {['btn-cancel']}
+                                            onClick = {() => {
+                                                
+                                                handleDeleteUserClass(member.id_user ,id_class)  
+                                            }}
+                                        />
                                     ) : null
                                 }
+
+                                {
+                                    member.id_status_class_user != 1 && member.id_type_class_user !== 1 ? (
+                                        <Button
+                                            id = 'cancellClass'
+                                            text = 'Enrolar'
+                                            type = 'buttom'
+                                            classes = {['btn-cancel']}
+                                            onClick = {() => {
+                                                handleEnrollUser(member.id_type_class_user)    
+                                            }}
+                                        />
+                                    ) : null
+                                }
+
                             </div>
                         ))
                     ) : (

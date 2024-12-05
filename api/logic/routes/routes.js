@@ -31,7 +31,7 @@ router.put('/upload-class', midleWareVerifyToken, uploadClass);
 router.put('/cancell-class', cancellClass);
 router.get('/all-status-class',midleWareVerifyToken, getAllStatusClass);
 router.get('/members-class', midleWareVerifyToken, getAllMembersClass);
-router.get('/remove-member-class',midleWareVerifyToken, removeMemberClass);
+router.delete('/remove-member-class/:idUser/:idClass',midleWareVerifyToken, removeMemberClass);
 
 
 

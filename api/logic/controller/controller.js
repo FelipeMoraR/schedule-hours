@@ -681,8 +681,6 @@ const getAllClasses = async (req, res) => {
 
         const offset = (page - 1) * limit;
 
-        console.log('offset => ', offset);
-
         let query = `
                 SELECT 
 			        c.id_class, 
@@ -707,7 +705,7 @@ const getAllClasses = async (req, res) => {
         if(!idUser) query += ` WHERE STR_TO_DATE(CONCAT(c.date_class, ' ', c.time_class), '%Y-%m-%d %H:%i:%s') > NOW() AND s.id_status != 2 `;
 
         // Adding Limit and offset in a safe way
-        query += ` GROUP BY c.id_class LIMIT :limit OFFSET :offset`;
+        query += ` GROUP BY c.id_class  ORDER BY c.id_class LIMIT :limit OFFSET :offset`;
         replacements.limit = parseInt(limit);
         replacements.offset = parseInt(offset);
         
@@ -723,6 +721,7 @@ const getAllClasses = async (req, res) => {
         
         if(!listClasses) return res.status(500).json({status: 500, message: 'Error extracting classes categories'});
 
+        
 
         return res.status(200).json({status: 200, message: 'Success', data: listClasses});
     }
@@ -1093,12 +1092,13 @@ const getAllMembersClass = async (req, res) => {
 
         if(!idClass) return res.status(404).json({status: 404, message: 'id_class not provided'});
 
-        const result = await db.sequelize.query('SELECT cu.id_type_class_user, u.username FROM CLASS_USER cu JOIN USER u ON cu.id_user = u.id_user WHERE cu.id_class = :id_class;', {
+        const result = await db.sequelize.query('SELECT cu.id_type_class_user, u.username, u.id_user, cu.id_status_class_user FROM CLASS_USER cu JOIN USER u ON cu.id_user = u.id_user WHERE cu.id_class = :id_class;', {
             replacements: {
                 id_class: parseInt(idClass)
             },
             type: db.Sequelize.QueryTypes.SELECT
         });
+
         
         if(!result) return res.status(404).json({status: 404, message: 'No memebers found'});
 
@@ -1114,8 +1114,8 @@ const removeMemberClass = async (req, res) => {
     const transaction = await db.sequelize.transaction();
 
     try{
-        const { idUser, idClass } = req.query;
-        
+        const { idUser, idClass } = req.params;
+
         const result = await db.sequelize.query('DELETE FROM CLASS_USER WHERE id_user = :id_user AND id_class = :id_class', {
             replacements: {
                 id_user: parseInt(idUser),
