@@ -62,11 +62,11 @@ const YourClasses = () => {
         setTypeView('viewAll');
     }
 
-    const handleDeleteClass = async  (id_class: number) => {
+    const handleDeleteClass = async  (id_class: number, folderImg: string, nameImg: string) => {
         showModal('loadingDeleteClass');
         const idClass = id_class.toString();
         
-        const statusResponse = await fetchDeleteClass(idClass);
+        const statusResponse = await fetchDeleteClass(idClass, folderImg, nameImg);
 
         if(!statusResponse){
             console.error('Error trying to remove the class');
@@ -152,7 +152,6 @@ const YourClasses = () => {
     }; // Math.max(prev - 1, 1) enshure prev never will be less than 0
 
     useEffect(() => {
-        console.log('Entra a esta vaina allClasses => ', allClasses);
         const handlerFunctionFetchs = async () => {
             setIsLoadingGetClasses(true);
             await handlerFetchGetClasses();
@@ -166,6 +165,12 @@ const YourClasses = () => {
     useEffect(() => {
         if(isLoadingGetClasses) return
         
+        if(!allClasses) {
+            setIsLoadingGetAllCategories(false);
+            setIsLoadingGetAllStatus(false);
+            return
+        }
+
         const handlerFetchGetAllCategories = async () => {
             const result = await fetchGetAllCategoryClass();
             
@@ -182,6 +187,12 @@ const YourClasses = () => {
     useEffect(() => {
         if(isLoadingGetClasses || isLoadingGetAllCategories) return;
         
+        if(!allClasses) {
+            setIsLoadingGetAllCategories(false);
+            setIsLoadingGetAllStatus(false);
+            return
+        }
+
         const handlerFetchGetAllStatus = async () => {
             const result = await fetchGetAllStatusClasses();
             

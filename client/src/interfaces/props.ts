@@ -139,8 +139,9 @@ export interface IClass {
     members?: Array<IMember>;
     time_class?: string;
     date_class?: string;
-    deleteClass? : (id_class: number) => void;
+    deleteClass? : (id_class: number, nameFolder: string, nameImg: string) => void;
     handleCancellClass? : (id_class: number) => void;
+    hendleUploadMembers? : (id_user: number) => void;
 }
 
 export interface IViewClass {
@@ -158,7 +159,7 @@ export interface IViewClass {
     allCategories?: Array<ICategoryClass>;
     allStatus? : Array<IStatusClass>;
     handleBack?: () => void;
-    deleteClass? : (id_class: number) => void;
+    deleteClass? : (id_class: number, nameFolder: string, nameImg: string) => void;
     handleCancellClass?: (id_class: number) => void;
 }
 
@@ -167,7 +168,7 @@ export interface IViewAllClases{
     type_user: number;
     isEditable: boolean;
     handleViewClass?: (id_class: any) => void
-    deleteClass? : (id_class: number) => void;
+    deleteClass? : (id_class: number, nameFolder: string, nameImg: string) => void;
 }
 
 export interface INavBarBtn{

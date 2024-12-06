@@ -72,6 +72,20 @@ const uploadCloudImg = (image) => {
     });
 };
 
+const deleteCloudImg = async (folder, nameImg) => {
+    const idImg = folder + '/' + nameImg;
+
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.destroy(idImg, { invalidate: true }, (error, result) => {
+            console.log('result => ', result);
+            if(result) return resolve(result);
+
+            console.error('Error deleteCloudImg => ' + error);
+            return reject(error);
+        })
+    })
+}
+
 const resUploadCloudImg = (req, res) => {
     try{
         const { image } = req.body;
@@ -816,32 +830,47 @@ const getAllStatusClass = async (_, res) => {
     }
 };
 
+
 const deleteClass = async (req, res) => {
 
     const transaction = await db.sequelize.transaction(); //Transaction starts
-
+    
     try{
-        const { id } = req.params;
+        const { id, folder, nameImg } = req.params;
 
-        const [result] = await db.sequelize.query('CALL DeleteClass(:id_class)', 
-            {
-                replacements: {
-                    id_class: parseInt(id) 
-                },
-                transaction
-            }
-        )
+        if (!id || !folder || !nameImg) return res.status(404).json({status: 404, message: 'Values not provided'});
 
-        if(!result) return res.status(500).json({status: 500, message: 'Something went wront, no data returned'});
+        console.log(folder + ' ' + nameImg);
 
-        await transaction.commit();
+        await deleteCloudImg(folder, nameImg)
+            .then(async (msj) => {
+                if(msj.result !== 'ok') throw new Error('Img not deleted');
+                
+                const [result] = await db.sequelize.query('CALL DeleteClass(:id_class)', 
+                    {
+                        replacements: {
+                            id_class: parseInt(id) 
+                        },
+                        transaction
+                    }
+                )
 
-        return res.status(200).json({status: 200, message: result['Total rows deleted'] + ' Rows deleted'});
+                if(!result) return res.status(500).json({status: 500, message: 'Something went wront, no data returned'});
+
+                await transaction.commit();
+
+                return res.status(200).json({status: 200, message: result['Total rows deleted'] + ' Rows deleted'});
+            })
+            .catch((err) => {
+                throw new Error(err);
+            });
+
+        
     }
     catch(err){
         await transaction.rollback();
         console.error(err);
-        return res.status(500).json({status: 500, message: 'Something went wrong ' + err });
+        return res.status(500).json({status: 500, message: 'Something went wrong deleteClass:: => ' + err });
     }
 }
 

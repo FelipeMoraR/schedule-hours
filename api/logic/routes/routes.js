@@ -26,13 +26,12 @@ router.post('/upload-image', midleWareVerifyToken, resUploadCloudImg);
 router.get('/all-category-class', midleWareVerifyToken, getAllCategoryClass);
 router.get('/all-classes', midleWareVerifyToken, getAllClasses);
 router.get('/all-counted-classes', midleWareVerifyToken, getTotalCountClasses);
-router.delete('/delete-class/:id', midleWareVerifyToken, deleteClass);
+router.delete('/delete-class/:id/:folder/:nameImg', midleWareVerifyToken, deleteClass);
 router.put('/upload-class', midleWareVerifyToken, uploadClass);
 router.put('/cancell-class', cancellClass);
 router.get('/all-status-class',midleWareVerifyToken, getAllStatusClass);
 router.get('/members-class', midleWareVerifyToken, getAllMembersClass);
 router.delete('/remove-member-class/:idUser/:idClass',midleWareVerifyToken, removeMemberClass);
-
 
 
 

@@ -44,14 +44,18 @@ const NavBarButtomsAuth = ({isAuthenticated, handleButton, logout, typeUser} : I
                 onClick = {handleButton}
             /> 
 
-            <Button 
-                id = 'createClass'
-                text = 'Crear clase'
-                type = 'button'
-                classes = {location.pathname === '/create-class' ? ['blocked'] : ['']}
-                onClick = {handleButton}
-            /> 
-
+            {
+                typeUser != 2 ? (
+                    <Button 
+                        id = 'createClass'
+                        text = 'Crear clase'
+                        type = 'button'
+                        classes = {location.pathname === '/create-class' ? ['blocked'] : ['']}
+                        onClick = {handleButton}
+                    /> 
+                ) : null
+            }
+            
             <Button 
                 id = 'allClasses'
                 text = 'Clases'

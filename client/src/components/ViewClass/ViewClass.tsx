@@ -23,6 +23,10 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
         setIsLoadingMembers(false);
     }
 
+    const hendleUploadMembers = (idUser: number) => {
+        setMembersClass(membersClass.filter(member => member.id_user != idUser))
+    }
+
     useEffect(() => {
         handleGetMembers();
     }, []);
@@ -87,6 +91,7 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                 time_class = {time_class}
                 date_class = {date_class}
                 handleCancellClass = {handleCancellClass}
+                hendleUploadMembers = {hendleUploadMembers}
             />
         </>
     )

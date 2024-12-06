@@ -20,10 +20,10 @@ import fetchUpdateClass from "../../utils/FetchUpdateClass.ts";
 import fetchUploadImg from "../../utils/FetchUploadImgClodify.ts";
 import { IBodyCreateClass } from "../../interfaces/props"; 
 import fetchRemoveMemberClass from "../../utils/FetchRemoveMemberClass.ts";
+import ClassNotEditable from "./ClassNotEditable.tsx";
+import extractFolderNameImg from "../../utils/ExtractFolderNameImg.ts";
 
-const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class, handleCancellClass } : IClass) => {
-    
-
+const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class, handleCancellClass, hendleUploadMembers } : IClass) => {
     const id_status_filtered = allStatus?.filter(status => status.name === status_name ).map(status => status.id_status)[0]; //Remember, if you just use one '=' this repleace all name of the obj.
 
     const id_category_filtered = categories?.map(cat => cat.id_category.toString());
@@ -336,12 +336,41 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
     const handleDeleteUserClass = async (idUser: number, idClass: number) => {
         const parsedIdUser = idUser.toString();
         const parsedIdClass = idClass.toString();
-    
+        
+        showModal('loadingDeleteUser');
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         const result = await fetchRemoveMemberClass(parsedIdUser, parsedIdClass);
 
-        console.log(result);
+        closeModal();
+        
+        setMessageResponse(result.message);
+
+        showModal('infoResponse');
     }
 
+    if(status_name == "cancelled"){
+        return(
+            <>
+                <h1>Vista interna no editable debido a que la clase está cancelada</h1>
+                <ClassNotEditable
+                    id_class = {id_class}
+                    class_name = {class_name}
+                    description = {description}
+                    max_number_member = {max_number_member}
+                    photo = {photo}
+                    status_name = {status_name}
+                    type_user = {1}
+                    categories = {categories}
+                    members = {members}
+                    time_class = {time_class}
+                    date_class = {date_class}
+                />
+            </>
+            
+        )
+    }
     
     return (
         <>
@@ -350,6 +379,15 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                 type = 'loader'
                 title = 'loadingForm'
                 isOpen = {isModalOpen('loadingForm')}
+                classes = {['modal-infomative-grey']}
+                onClose = {closeModal}
+            />
+
+            <Modal 
+                id = 'loadingDeleteUser'
+                type = 'loader'
+                title = 'loadingDeleteUser'
+                isOpen = {isModalOpen('loadingDeleteUser')}
                 classes = {['modal-infomative-grey']}
                 onClose = {closeModal}
             />
@@ -523,7 +561,9 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                                 type = 'buttom'
                                 classes = {['btn-delete']}
                                 onClick = {() => {
-                                    deleteClass(id_class);
+                                    const infoImg = extractFolderNameImg(photo);
+                                                           
+                                    deleteClass(id_class, infoImg.nameFolder, infoImg.nameImg);
                                 }}
                             />
 
@@ -561,13 +601,13 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                                 {   
                                     member.id_type_class_user !== 1 ? (
                                         <Button
-                                            id = 'cancellClass'
+                                            id = 'deleteMember'
                                             text = 'Eliminar '
                                             type = 'buttom'
                                             classes = {['btn-cancel']}
                                             onClick = {() => {
-                                                
-                                                handleDeleteUserClass(member.id_user ,id_class)  
+                                                handleDeleteUserClass(member.id_user, id_class);
+                                                if(hendleUploadMembers) hendleUploadMembers(member.id_user);
                                             }}
                                         />
                                     ) : null
@@ -576,7 +616,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                                 {
                                     member.id_status_class_user != 1 && member.id_type_class_user !== 1 ? (
                                         <Button
-                                            id = 'cancellClass'
+                                            id = 'enrollUser'
                                             text = 'Enrolar'
                                             type = 'buttom'
                                             classes = {['btn-cancel']}

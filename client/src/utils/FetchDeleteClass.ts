@@ -1,9 +1,9 @@
 
 
-const fetchDeleteClass = async (idClass: string) => {
+const fetchDeleteClass = async (idClass: string, folderImg: string, nameImg: string) => {
     try{
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
-        const url = apiUrl + '/auth/api/delete-class/' + idClass;
+        const url = apiUrl + '/auth/api/delete-class/' + idClass + '/' + folderImg + '/' + nameImg;
 
         const response = await fetch(url, {
             method: 'DELETE',

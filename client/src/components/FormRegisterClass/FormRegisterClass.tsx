@@ -128,7 +128,7 @@ function FormRegisterClass({ classes }: IRegisterClass) {
 
         removeIdError('categories');
         
-        if(checked && value){
+        if(checked){
             setCateogyClassSelected([
                 ...cateogyClassSelected,
                 value
@@ -272,6 +272,8 @@ function FormRegisterClass({ classes }: IRegisterClass) {
         showModal('infoResponse');
 
         if(responseCreateClass.status == 200){
+            setPreViewImg('');
+            setCateogyClassSelected([]);
             setFormValues({
                 "name": "",
                 "description": "",
@@ -419,14 +421,15 @@ function FormRegisterClass({ classes }: IRegisterClass) {
                         allCategoryClass.map((category) => ( //This structure of map dont need a return because this sintaxis implicity say it
                             <div key={category.id_category}>
                                 <InputField
-                                id = {category.id_category.toString()}
-                                label = {category.category_name}
-                                type = {'checkbox'}
-                                name = {'categories'}
-                                required = {false}
-                                value={category.id_category}
-                                classes = {hasError('categories') ? ['error-class'] : ['normal-class']}
-                                onChange={handleInputOnChangeCategory}
+                                    id = {category.id_category.toString()}
+                                    label = {category.category_name}
+                                    type = {'checkbox'}
+                                    name = {'categories'}
+                                    required = {false}
+                                    value={category.id_category}
+                                    classes = {hasError('categories') ? ['error-class'] : ['normal-class']}
+                                    onChange={handleInputOnChangeCategory}
+                                    checked = {cateogyClassSelected.includes(category.id_category.toString())}
                                 />
                             </div>
                         ))  //Here is the change, this end with a double (), if we use ({}) you have to write the return or this wouldnt work

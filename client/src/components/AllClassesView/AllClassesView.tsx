@@ -1,6 +1,7 @@
 import styles from './AllClassesView.module.css';
 import { IViewAllClases } from '../../interfaces/props';
 import Button from '../Button/Button';
+import extractFolderNameImg from '../../utils/ExtractFolderNameImg';
 
 const ViewAllClasses = ({allClasses, type_user, isEditable, handleViewClass, deleteClass} : IViewAllClases) => {
     return(
@@ -58,7 +59,9 @@ const ViewAllClasses = ({allClasses, type_user, isEditable, handleViewClass, del
                                                             type = 'buttom'
                                                             classes = {['btn-delete']}
                                                             onClick = {() => {
-                                                                deleteClass(element.id_class);
+                                                                const infoImg = extractFolderNameImg(element.photo);
+                                                                
+                                                                deleteClass(element.id_class, infoImg.nameFolder, infoImg.nameImg);
                                                             }}
                                                         />
                                                     </div>

@@ -93,7 +93,7 @@ const AllClases = () => {
     const prevPage = () => {
         setAllClasses([]); //Beside this mantain the page when we re-render some components.
         setPage((prev) => Math.max(prev - 1, 1))
-    }; // Math.max(prev - 1, 1) enshure prev never will be less than 0
+    }; // Math.max(prev - 1, 1) ensure prev never will be less than 0
 
 
     useEffect(() => {
@@ -102,6 +102,12 @@ const AllClases = () => {
     }, [page]);
 
     
+    if(!allClasses){
+        return(
+            <h1>No tienes clases</h1>
+        )
+    }
+
     if(isLoadingGetClasses){
         return(
             <h1>Cargando clases!</h1>
