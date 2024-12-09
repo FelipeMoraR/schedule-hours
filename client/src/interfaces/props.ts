@@ -141,7 +141,8 @@ export interface IClass {
     date_class?: string;
     deleteClass? : (id_class: number, nameFolder: string, nameImg: string) => void;
     handleCancellClass? : (id_class: number) => void;
-    hendleUploadMembers? : (id_user: number) => void;
+    handleRemoveMember? : (id_user: number) => void;
+    handleAddNewMember? : (member: IMember) => void;
 }
 
 export interface IViewClass {

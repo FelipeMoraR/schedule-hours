@@ -23,9 +23,26 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
         setIsLoadingMembers(false);
     }
 
-    const hendleUploadMembers = (idUser: number) => {
+    const handleRemoveMember = (idUser: number) => {
         setMembersClass(membersClass.filter(member => member.id_user != idUser))
     }
+
+    const handleAddNewMember = (member: IMember) => {
+        setMembersClass([
+            ...membersClass,
+            member
+        ])
+    }
+
+    const handleUploadMember = (idUser: number) => {
+        const memebersFilter = membersClass.filter(member => member.id_user != idUser);
+        const memberToUpload = membersClass.filter(member => member.id_user == idUser);
+
+
+        
+    }
+
+   
 
     useEffect(() => {
         handleGetMembers();
@@ -61,6 +78,7 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                     members = {membersClass}
                     time_class = {time_class}
                     date_class = {date_class}
+                    handleAddNewMember = {handleAddNewMember}
                 />
             </>
         )
@@ -91,7 +109,7 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                 time_class = {time_class}
                 date_class = {date_class}
                 handleCancellClass = {handleCancellClass}
-                hendleUploadMembers = {hendleUploadMembers}
+                handleRemoveMember = {handleRemoveMember}
             />
         </>
     )

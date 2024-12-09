@@ -22,8 +22,10 @@ import { IBodyCreateClass } from "../../interfaces/props";
 import fetchRemoveMemberClass from "../../utils/FetchRemoveMemberClass.ts";
 import ClassNotEditable from "./ClassNotEditable.tsx";
 import extractFolderNameImg from "../../utils/ExtractFolderNameImg.ts";
+import fetchAcceptEnrollStudentClass from "../../utils/FetchAcceptEnrollStudentClass.ts";
 
-const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class, handleCancellClass, hendleUploadMembers } : IClass) => {
+
+const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class, handleCancellClass, handleRemoveMember } : IClass) => {
     const id_status_filtered = allStatus?.filter(status => status.name === status_name ).map(status => status.id_status)[0]; //Remember, if you just use one '=' this repleace all name of the obj.
 
     const id_category_filtered = categories?.map(cat => cat.id_category.toString());
@@ -329,8 +331,17 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
         return
     }
 
-    const handleEnrollUser = async (idUser: number) => {
-        console.log(idUser);
+    const handleAcceptEnrollUser = async (idUser: number, idClass: number) => {
+
+        const body = JSON.stringify({
+            "idUser" : idUser,
+            "idClass" : idClass
+        })
+
+        
+        const result = await fetchAcceptEnrollStudentClass(body);
+
+        console.log(result);
     }
 
     const handleDeleteUserClass = async (idUser: number, idClass: number) => {
@@ -604,10 +615,10 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                                             id = 'deleteMember'
                                             text = 'Eliminar '
                                             type = 'buttom'
-                                            classes = {['btn-cancel']}
+                                            classes = {['btn-delete']}
                                             onClick = {() => {
                                                 handleDeleteUserClass(member.id_user, id_class);
-                                                if(hendleUploadMembers) hendleUploadMembers(member.id_user);
+                                                if(handleRemoveMember) handleRemoveMember(member.id_user);
                                             }}
                                         />
                                     ) : null
@@ -619,9 +630,9 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                                             id = 'enrollUser'
                                             text = 'Enrolar'
                                             type = 'buttom'
-                                            classes = {['btn-cancel']}
+                                            classes = {['btn-enroll']}
                                             onClick = {() => {
-                                                handleEnrollUser(member.id_type_class_user)    
+                                                handleAcceptEnrollUser(member.id_user, id_class);    
                                             }}
                                         />
                                     ) : null

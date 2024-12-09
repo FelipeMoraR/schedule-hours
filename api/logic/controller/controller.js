@@ -1170,6 +1170,49 @@ const removeMemberClass = async (req, res) => {
     }
 }
 
+const petitionEnrollStudentClass = async (req, res) => {
+    try{
+        const { idUser, idClass } = req.body;
+
+        if(!idUser || !idClass) return res.status(404).json({status: 404, message: 'Id user or id class not provided'});
+        
+        const [result] = await db.sequelize.query('CALL EnrollStudentClass(:idUser, :idClass)', {
+            replacements: {
+                idUser: parseInt(idUser),
+                idClass: parseInt(idClass)
+            }
+        });
+
+        if(!result) throw new Error('no response insert student');
+
+        return res.status(200).json({status: 200, data: result});
+    } catch (err){
+        console.log('Something went wrong enrollStudentClass::  ' + err);
+        return res.status(500).json({status: 500, message: err});
+    }
+}
+
+
+const acceptEnrollStudentClass = async (req, res) => {
+    try{
+        const { idUser, idClass } = req.body;
+
+        const [result] = await db.sequelize.query('CALL AcceptEnrollStudent(:idUser, :idClass)', {
+            replacements: {
+                idUser: idUser,
+                idClass: idClass
+            }
+        });
+
+        if(!result) throw new Error('No response of AcceptEnrollStudent sp');
+
+        return res.status(200).json({status: 200, data: result});
+    } catch(err){
+        console.log(err);
+        return res.status(500).json({status: 500, message: err});
+    }
+}
+
 
 
 
@@ -1195,5 +1238,7 @@ module.exports = {
     getAllStatusClass,
     getAllMembersClass,
     removeMemberClass,
-    cancellClass
+    cancellClass,
+    petitionEnrollStudentClass,
+    acceptEnrollStudentClass
 }
