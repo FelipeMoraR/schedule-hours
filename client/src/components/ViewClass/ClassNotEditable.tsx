@@ -5,6 +5,8 @@ import Button from "../Button/Button";
 import Modal from "../Modal/Modal";
 import { useModal } from "../../utils/UseModal";
 import { useState } from "react";
+import validateSesion from "../../utils/SesionValidator";
+import { useNavigate } from "react-router-dom";
 
 const ClassNotEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, type_user, categories, members, time_class, date_class, handleAddNewMember } : IClass) => {
     
@@ -13,11 +15,29 @@ const ClassNotEditable = ({ id_class, class_name, description, max_number_member
     const { closeModal, isModalOpen, showModal } = useModal();
     const [msjResponse, setMsjResponse] = useState<string>();
     const [isLoadingEnroll, setIsLoadingEnroll] = useState<boolean>(false);
-
+    const navigate = useNavigate();
 
     const handleEnrollStudentClass = async () => {
         setIsLoadingEnroll(true);
-    
+        
+        const statusSesion = await validateSesion();
+
+        if(!statusSesion) {
+            closeModal(); //Closing loadingForm modal
+
+            setIsLoadingEnroll(false);
+
+            setMsjResponse('Sesion caducada');
+            showModal('response');
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            
+
+            navigate('/login-user');
+            return
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const body = JSON.stringify({
@@ -34,17 +54,29 @@ const ClassNotEditable = ({ id_class, class_name, description, max_number_member
 
         const result = await fetchEnrollStudentClass(body);
 
-        if (result.data.classIsFull) {
+        console.log(result);
+
+        if(result.status == 406) {
+            setIsLoadingEnroll(false);
+            setMsjResponse('Ya tienes una clase en este horario, no puedes unirte...');
+        }
+
+        if(result.status != 200 && result.status != 406){
+            setIsLoadingEnroll(false);
+            setMsjResponse('Error al intentar unirte, intentelo mas tarde...');
+        }
+
+        if (result.data && result.data.classIsFull) {
             setMsjResponse('Clase llena');
             setIsLoadingEnroll(false);
         }
 
-        if (result.data.userInserted == 0 && result.data.userExistInClass == 1){
+        if (result.data && result.data.userInserted == 0 && result.data.userExistInClass == 1){
             setMsjResponse('Ya estas en la clase');
             setIsLoadingEnroll(false);
         }
 
-        if (result.data.userInserted == 1 && result.data.userExistInClass == 0){
+        if (result.data && result.data.userInserted == 1 && result.data.userExistInClass == 0){
             setMsjResponse('Haz ingresado a la clase!');
             if(handleAddNewMember) handleAddNewMember(memberSesion);
             setIsLoadingEnroll(false);

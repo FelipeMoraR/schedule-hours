@@ -1176,6 +1176,16 @@ const petitionEnrollStudentClass = async (req, res) => {
 
         if(!idUser || !idClass) return res.status(404).json({status: 404, message: 'Id user or id class not provided'});
         
+        const [classAviable] = await db.sequelize.query('CALL VerifyClassDate(:idUser, :idClass)', {
+            replacements: {
+                idUser: parseInt(idUser),
+                idClass: parseInt(idClass)
+            }
+        });
+
+
+        if(!classAviable.classAviable) return res.status(406).json({status: 406, message: 'User already has a class in that time'});
+
         const [result] = await db.sequelize.query('CALL EnrollStudentClass(:idUser, :idClass)', {
             replacements: {
                 idUser: parseInt(idUser),
@@ -1196,6 +1206,8 @@ const petitionEnrollStudentClass = async (req, res) => {
 const acceptEnrollStudentClass = async (req, res) => {
     try{
         const { idUser, idClass } = req.body;
+
+        if(!idUser || !idClass) return res.status(404).json({status: 404, message: 'Entry values missing idUser or idClass'});
 
         const [result] = await db.sequelize.query('CALL AcceptEnrollStudent(:idUser, :idClass)', {
             replacements: {

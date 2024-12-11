@@ -25,7 +25,7 @@ import extractFolderNameImg from "../../utils/ExtractFolderNameImg.ts";
 import fetchAcceptEnrollStudentClass from "../../utils/FetchAcceptEnrollStudentClass.ts";
 
 
-const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class, handleCancellClass, handleRemoveMember } : IClass) => {
+const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class, handleCancellClass, handleRemoveMember, handleUploadMember } : IClass) => {
     const id_status_filtered = allStatus?.filter(status => status.name === status_name ).map(status => status.id_status)[0]; //Remember, if you just use one '=' this repleace all name of the obj.
 
     const id_category_filtered = categories?.map(cat => cat.id_category.toString());
@@ -48,6 +48,8 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
     const { addIdError, removeIdError, emptyIdError, hasError } = identifyInputError();
     const [errorFormatImg, setErrorFormatImg] = useState('');
     const [errorForm, setErrorForm] = useState<Array<string>>([]);
+    const [titleModal, setTitleModal] = useState<string>('');
+
 
     //We have to add error controll
     const handlePreViewImg = (files: Blob) => {
@@ -332,36 +334,94 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
     }
 
     const handleAcceptEnrollUser = async (idUser: number, idClass: number) => {
+        setTitleModal('Enrolando usuario..');
+        showModal('loadingModal');
+
+        const statusSesion = await validateSesion();
+
+        if(!statusSesion) {
+            closeModal(); //Closing loadingForm modal
+
+            setMessageResponse('Sesion caducada');
+            showModal('infoResponse');
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            navigate('/login-user');
+            return
+        }
 
         const body = JSON.stringify({
             "idUser" : idUser,
             "idClass" : idClass
-        })
+        });
 
-        
         const result = await fetchAcceptEnrollStudentClass(body);
-
-        console.log(result);
-    }
-
-    const handleDeleteUserClass = async (idUser: number, idClass: number) => {
-        const parsedIdUser = idUser.toString();
-        const parsedIdClass = idClass.toString();
-        
-        showModal('loadingDeleteUser');
 
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const result = await fetchRemoveMemberClass(parsedIdUser, parsedIdClass);
+        if(result.status != 200) {
+            closeModal();
+
+            setMessageResponse('Algo anda mal.. intente mas tarde');
+            showModal('infoResponse');
+
+            return
+        }
+
+        if(handleUploadMember) handleUploadMember(idUser);
 
         closeModal();
         
-        setMessageResponse(result.message);
+        setMessageResponse('Usuario enrolado');
+        showModal('infoResponse');
 
+        return
+    }
+
+    const handleDeleteUserClass = async (idUser: number, idClass: number, id_user: number) => {
+        const parsedIdUser = idUser.toString();
+        const parsedIdClass = idClass.toString();
+        
+        setTitleModal('Eliminando usuario..');
+        showModal('loadingModal');
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const statusSesion = await validateSesion();
+
+        if(!statusSesion) {
+            closeModal(); //Closing loadingForm modal
+
+            setMessageResponse('Sesion caducada');
+            showModal('infoResponse');
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            navigate('/login-user');
+            return
+        }
+
+        const result = await fetchRemoveMemberClass(parsedIdUser, parsedIdClass);
+        
+        if(result.status != 200) {
+            closeModal();
+
+            setMessageResponse('Algo anda mal.. intente mas tarde');
+            showModal('infoResponse');
+
+            return
+        }
+
+        if(handleRemoveMember) handleRemoveMember(id_user);
+
+        closeModal();
+
+        setMessageResponse(result.message);
         showModal('infoResponse');
     }
 
-    if(status_name == "cancelled"){
+    if(status_name == "cancelled") {
         return(
             <>
                 <h1>Vista interna no editable debido a que la clase está cancelada</h1>
@@ -395,10 +455,10 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
             />
 
             <Modal 
-                id = 'loadingDeleteUser'
+                id = 'loadingModal'
                 type = 'loader'
-                title = 'loadingDeleteUser'
-                isOpen = {isModalOpen('loadingDeleteUser')}
+                title = {titleModal}
+                isOpen = {isModalOpen('loadingModal')}
                 classes = {['modal-infomative-grey']}
                 onClose = {closeModal}
             />
@@ -617,8 +677,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                                             type = 'buttom'
                                             classes = {['btn-delete']}
                                             onClick = {() => {
-                                                handleDeleteUserClass(member.id_user, id_class);
-                                                if(handleRemoveMember) handleRemoveMember(member.id_user);
+                                                handleDeleteUserClass(member.id_user, id_class, member.id_user);
                                             }}
                                         />
                                     ) : null

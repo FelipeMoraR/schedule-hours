@@ -36,9 +36,13 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
 
     const handleUploadMember = (idUser: number) => {
         const memebersFilter = membersClass.filter(member => member.id_user != idUser);
-        const memberToUpload = membersClass.filter(member => member.id_user == idUser);
+        const [memberToUpload] = membersClass.filter(member => member.id_user == idUser);
 
+        memberToUpload.id_status_class_user = 1;
 
+        memebersFilter.push(memberToUpload);
+
+        setMembersClass(memebersFilter);
         
     }
 
@@ -110,6 +114,7 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                 date_class = {date_class}
                 handleCancellClass = {handleCancellClass}
                 handleRemoveMember = {handleRemoveMember}
+                handleUploadMember = {handleUploadMember}
             />
         </>
     )

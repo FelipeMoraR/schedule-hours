@@ -143,6 +143,7 @@ export interface IClass {
     handleCancellClass? : (id_class: number) => void;
     handleRemoveMember? : (id_user: number) => void;
     handleAddNewMember? : (member: IMember) => void;
+    handleUploadMember? : (id_user: number) => void;
 }
 
 export interface IViewClass {
