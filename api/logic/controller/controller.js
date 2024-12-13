@@ -1228,7 +1228,7 @@ const acceptEnrollStudentClass = async (req, res) => {
 const viewProfile = async (req, res) => {
     try{
         const { idUser } = req.params;
-
+        console.log('ID USER =>', idUser);
         if(!idUser) return res.status(404).json({status: 404, message: 'Id user no provided'});
  
         const result = await db.sequelize.query('SELECT id_user, username, first_name, last_name, second_last_name, run, run_dv, description, profile_photo, age FROM USER WHERE id_user = :idUser', {

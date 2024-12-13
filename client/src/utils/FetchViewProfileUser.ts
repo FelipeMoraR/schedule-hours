@@ -2,8 +2,8 @@
 const fetchViewProfileUser = async (idUser: string) => {
     try{
         const apiUrl = import.meta.env.VITE_BACKEND_URL;
-        const url = apiUrl + `/view-user/${idUser}`;
-
+        const url = apiUrl + `/auth/api/view-user/${idUser}`;
+        console.log(url)
         const response = await fetch(url, {
             method: 'GET',
             headers: {

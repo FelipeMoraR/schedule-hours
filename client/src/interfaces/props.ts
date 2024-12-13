@@ -220,3 +220,16 @@ export interface IProfile {
     age: number;
     typeView: number;
 }
+
+export interface IUser {
+    id_user: number;
+    username:  string;
+    first_name:  string;
+    last_name:  string | null;
+    second_last_name:  string | null;
+    run:  number;
+    run_dv:  string;
+    description:  string | null;
+    profile_photo:  string | null;
+    age: number;
+}

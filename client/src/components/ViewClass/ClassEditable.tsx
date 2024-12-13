@@ -23,6 +23,7 @@ import fetchRemoveMemberClass from "../../utils/FetchRemoveMemberClass.ts";
 import ClassNotEditable from "./ClassNotEditable.tsx";
 import extractFolderNameImg from "../../utils/ExtractFolderNameImg.ts";
 import fetchAcceptEnrollStudentClass from "../../utils/FetchAcceptEnrollStudentClass.ts";
+import { useAuthContext } from "../../hooks/authContext.tsx";
 
 
 const ClassEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, categories, allCategories, allStatus, deleteClass, members, date_class, time_class, handleCancellClass, handleRemoveMember, handleUploadMember } : IClass) => {
@@ -30,6 +31,9 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
 
     const id_category_filtered = categories?.map(cat => cat.id_category.toString());
     
+    const {userData} = useAuthContext();
+    const idUser = userData.id_user;
+
     const [formValues, setFormValues] = useState({
         "name": class_name,
         "description": description,
@@ -50,6 +54,7 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
     const [errorForm, setErrorForm] = useState<Array<string>>([]);
     const [titleModal, setTitleModal] = useState<string>('');
 
+    
 
     //We have to add error controll
     const handlePreViewImg = (files: Blob) => {
@@ -666,8 +671,16 @@ const ClassEditable = ({ id_class, class_name, description, max_number_member, p
                     members && members.length > 0 ? (
                         members.map((member, index) => (
                             <div key={member.id_type_class_user}>
+                                <div key={member.id_user}>
+                                {
+                                    member.id_user == idUser ? (
+                                        <a  href = {'/profile-user'}>{index + 1} - {member.username} - {member.id_type_class_user == 1 ? 'Dueño' : 'Participante'} - {member.id_status_class_user == 1 ? 'Enrolado' : 'Pendiente...'} (tú)</a>
+                                    ) : (
+                                        <a  href = {'/view-other-profile-user/' + member.id_user}>{index + 1} - {member.username} - {member.id_type_class_user == 1 ? 'Dueño' : 'Participante'} - {member.id_status_class_user == 1 ? 'Enrolado' : 'Pendiente...'}</a>
+                                    )
+                                }
+                                </div>
                                 
-                                {index + 1} - {member.username} - {member.id_status_class_user == 1 ? 'Enrolado' : 'Pendiente...'}
                                 
                                 {   
                                     member.id_type_class_user !== 1 ? (

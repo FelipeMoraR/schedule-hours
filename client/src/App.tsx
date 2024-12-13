@@ -14,6 +14,7 @@ const CreateClass = lazy(() => import('./pages/RegisterClass/RegisterClass'));
 const NotFound = lazy(() => import('./pages/NotFound/NotFound'));
 const AllClases = lazy(() => import('./pages/AllClasses/AllClases'));
 const YourClasses = lazy(() => import('./pages/YourClasses/YourClasses'));
+const ViewOtherProfile = lazy(() => import('./pages/ViewOtherProfile/ViewOtherProfile'));
 
 function App() {
   const {isLoadingLogout} = useAuthContext();
@@ -39,10 +40,10 @@ function App() {
           <Route path = '/' element = {<HomePage />} />
           <Route path = '/login-user' element = {<LoginPage />} />
           <Route path = '/register-user' element = {<RegisterUser />} />
-          
+          <Route path = '/view-other-profile-user/:idUser' element = { <ViewOtherProfile/>} />
           {/* Private Routes */}
          
-          <Route path = '/profile-user/' element = {<PrivateRoute element = {<ProfileUser />} />} />
+          <Route path = '/profile-user' element = {<PrivateRoute element = {<ProfileUser />} />} />
           <Route path = '/create-class' element = {<PrivateRoute element = {<CreateClass/>} />} />
           <Route path = '/all-classes' element = {<PrivateRoute element = {<AllClases/>} />} />
           <Route path = '/your-classes' element = {<PrivateRoute element = {<YourClasses/>} /> } />

@@ -149,7 +149,13 @@ const ClassNotEditable = ({ id_class, class_name, description, max_number_member
                     members && members.length > 0 ? (
                         members.map((member, index) => (
                             <div key={member.id_user}>
-                                {index + 1} - {member.username} - {member.id_type_class_user == 1 ? 'Dueño' : ''} - {member.id_status_class_user == 1 ? 'Enrolado' : 'Pendiente...'}
+                                {
+                                    member.id_user == idUser ? (
+                                        <a  href = {'/profile-user'}>{index + 1} - {member.username} - {member.id_type_class_user == 1 ? 'Dueño' : 'Participante'} - {member.id_status_class_user == 1 ? 'Enrolado' : 'Pendiente...'} (tú)</a>
+                                    ) : (
+                                        <a  href = {'/view-other-profile-user/' + member.id_user}>{index + 1} - {member.username} - {member.id_type_class_user == 1 ? 'Dueño' : 'Participante'} - {member.id_status_class_user == 1 ? 'Enrolado' : 'Pendiente...'}</a>
+                                    )
+                                }
                             </div>
                         ))
                     ) : (
