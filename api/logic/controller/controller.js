@@ -1225,6 +1225,30 @@ const acceptEnrollStudentClass = async (req, res) => {
     }
 }
 
+const viewProfile = async (req, res) => {
+    try{
+        const { idUser } = req.params;
+
+        if(!idUser) return res.status(404).json({status: 404, message: 'Id user no provided'});
+ 
+        const result = await db.sequelize.query('SELECT id_user, username, first_name, last_name, second_last_name, run, run_dv, description, profile_photo, age FROM USER WHERE id_user = :idUser', {
+            replacements: {
+                idUser: parseInt(idUser)
+            },
+            type: db.Sequelize.QueryTypes.SELECT
+        }); 
+
+        if(result.length == 0) return res.status(404).json({status: 404, message: 'User not founded'});
+
+        return res.status(200).json({status: 200, data: result});
+        
+
+    } catch(err){
+        console.log('Error in viewProfile::: ' + err);
+        return res.status(500).json({status: 500, message: 'Something wrong happened: ' + err});
+    }
+}
+
 
 
 
@@ -1252,5 +1276,6 @@ module.exports = {
     removeMemberClass,
     cancellClass,
     petitionEnrollStudentClass,
-    acceptEnrollStudentClass
+    acceptEnrollStudentClass,
+    viewProfile
 }

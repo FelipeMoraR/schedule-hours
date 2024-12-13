@@ -132,7 +132,6 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
             return false
         }
 
-        console.log('Token valid');
         setIsAuthenticated(true);
         setIsLoadingVerifyCookie(false);
         return true
@@ -268,7 +267,7 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         if(isAuthenticated){
             const dataUser = await fetchGetUser();
             if(dataUser !== null){
-                console.log(dataUser);
+                
                 setUserData(dataUser);
             }
                 

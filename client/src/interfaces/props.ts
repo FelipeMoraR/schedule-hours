@@ -206,3 +206,17 @@ export interface IBodyCreateClass {
     new_date?: string;
     new_time?: string;
 }
+
+export interface IProfile {
+    id_user: number;
+    username: string;
+    first_name: string; 
+    last_name: string;
+    second_last_name: string;
+    run: string;
+    run_dv: string; 
+    description: string; 
+    profile_photo: string;
+    age: number;
+    typeView: number;
+}

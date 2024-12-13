@@ -3,7 +3,7 @@ const router = express.Router();
 const { registerUser, loginUser, logoutUser, midleWareVerifyToken, createTypeUser, cookieValidator, 
     removeCookie, refreshToken, insertTokenBlackList, getUserData, createStatusClass, createClass, resUploadCloudImg,
     getAllCategoryClass, getAllClasses, getTotalCountClasses, deleteClass, uploadClass, getAllStatusClass, getAllMembersClass, removeMemberClass,
-    cancellClass, petitionEnrollStudentClass, acceptEnrollStudentClass
+    cancellClass, petitionEnrollStudentClass, acceptEnrollStudentClass, viewProfile
 
 } = require('../controller/controller')
 
@@ -33,7 +33,8 @@ router.get('/all-status-class',midleWareVerifyToken, getAllStatusClass);
 router.get('/members-class', midleWareVerifyToken, getAllMembersClass);
 router.delete('/remove-member-class/:idUser/:idClass',midleWareVerifyToken, removeMemberClass);
 router.post('/enroll-student', midleWareVerifyToken, petitionEnrollStudentClass);
-router.post('/accept-enroll-student', acceptEnrollStudentClass);
+router.post('/accept-enroll-student', midleWareVerifyToken, acceptEnrollStudentClass);
+router.get('/view-user/:idUser', viewProfile);
 
 
 module.exports = router;

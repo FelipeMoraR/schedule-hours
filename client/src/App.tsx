@@ -41,7 +41,8 @@ function App() {
           <Route path = '/register-user' element = {<RegisterUser />} />
           
           {/* Private Routes */}
-          <Route path = '/profile-user' element = {<PrivateRoute element = {<ProfileUser />} />} />
+         
+          <Route path = '/profile-user/' element = {<PrivateRoute element = {<ProfileUser />} />} />
           <Route path = '/create-class' element = {<PrivateRoute element = {<CreateClass/>} />} />
           <Route path = '/all-classes' element = {<PrivateRoute element = {<AllClases/>} />} />
           <Route path = '/your-classes' element = {<PrivateRoute element = {<YourClasses/>} /> } />
