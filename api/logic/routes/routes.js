@@ -3,7 +3,7 @@ const router = express.Router();
 const { registerUser, loginUser, logoutUser, midleWareVerifyToken, createTypeUser, cookieValidator, 
     removeCookie, refreshToken, insertTokenBlackList, getUserData, createStatusClass, createClass, resUploadCloudImg,
     getAllCategoryClass, getAllClasses, getTotalCountClasses, deleteClass, uploadClass, getAllStatusClass, getAllMembersClass, removeMemberClass,
-    cancellClass, petitionEnrollStudentClass, acceptEnrollStudentClass, viewProfile
+    cancellClass, petitionEnrollStudentClass, acceptEnrollStudentClass, viewProfile, updateUser
 
 } = require('../controller/controller')
 
@@ -14,6 +14,7 @@ router.get('/refresh-token', refreshToken);
 router.post('/register-user', registerUser); //This is how you can add the middleware to protect routes.
 router.post('/login-user', loginUser);
 router.post('/insert-token-black-list', insertTokenBlackList);
+router.get('/view-user/:idUser', viewProfile);
 
 //Routes protected
 router.post('/create-type-user', midleWareVerifyToken, createTypeUser);
@@ -34,7 +35,8 @@ router.get('/members-class', midleWareVerifyToken, getAllMembersClass);
 router.delete('/remove-member-class/:idUser/:idClass',midleWareVerifyToken, removeMemberClass);
 router.post('/enroll-student', midleWareVerifyToken, petitionEnrollStudentClass);
 router.post('/accept-enroll-student', midleWareVerifyToken, acceptEnrollStudentClass);
-router.get('/view-user/:idUser', viewProfile);
+router.put('/update-user', updateUser);
+
 
 
 module.exports = router;

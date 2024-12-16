@@ -221,6 +221,16 @@ export interface IProfile {
     typeView: number;
 }
 
+export interface IFormEditProfile {
+    id_user: number;    
+    first_name: string;
+    last_name: string;
+    second_last_name: string | null;  
+    description: string | null;
+    profile_photo: string | null;
+    age: number;   
+}
+
 export interface IUser {
     id_user: number;
     username:  string;

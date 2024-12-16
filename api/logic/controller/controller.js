@@ -1250,6 +1250,11 @@ const viewProfile = async (req, res) => {
 }
 
 
+const updateUser = async (req, res) => {
+    
+}
+
+
 
 
 module.exports = {
@@ -1277,5 +1282,6 @@ module.exports = {
     cancellClass,
     petitionEnrollStudentClass,
     acceptEnrollStudentClass,
-    viewProfile
+    viewProfile,
+    updateUser
 }

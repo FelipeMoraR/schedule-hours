@@ -1,12 +1,20 @@
 import { IProfile } from "../../interfaces/props"
-
+import FormEditProfile from "../FormEditProfile/FormEditProfile"
 
 const ViewOurProfile = ({id_user, username, first_name, last_name, second_last_name, run, run_dv, description, profile_photo, age, typeView}: IProfile) => {
 
     if(typeView == 1){
         return (
             <>
-                <h1>Edit mode activated</h1>
+                <FormEditProfile
+                    id_user = {id_user}
+                    first_name = {first_name}
+                    last_name = {last_name}
+                    second_last_name = {second_last_name}
+                    description = {description}
+                    profile_photo = {profile_photo}
+                    age = {age}
+                />
             </>
         )
     }
