@@ -1,4 +1,4 @@
-import { IErrorResponse, IFormEditProfile } from "../../interfaces/props";
+import { IFormEditProfile } from "../../interfaces/props";
 import { useModal } from '../../utils/UseModal.ts';
 import Modal from '../Modal/Modal.tsx';
 import { 
@@ -7,30 +7,25 @@ import {
     validateOnlyNumbers, 
     validateMaxLengthInput, 
     validateMinLengthInput,
-    identifyInputError,
-    validateRut,
-    validatePassword
+    identifyInputError
     } from '../../utils/InputValidator.tsx';
 import { useNavigate } from 'react-router-dom';
 import validateSesion from '../../utils/SesionValidator.ts';
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Button from '../Button/Button';
 import InputField from '../InputField/InputField';
 import TextArea from '../TextArea/TextArea';
 import convertBase64 from '../../utils/decodeImageBase64';
 import fetchUploadImg from "../../utils/FetchUploadImgClodify.ts";
 import fetchUpdateUser from "../../utils/FetchUpdateUser.ts";
+import { useAuthContext } from "../../hooks/authContext.tsx";
 
 const FormEditProfile = ({id_user, first_name, last_name, second_last_name, description, profile_photo, age}: IFormEditProfile) => {
-
+    const {handleUpdateUser} = useAuthContext();
     const [messageResponse, setMessageResponse] = useState<string>();
     const [errorForm, setErrorForm] = useState<Array<string>>([]);
     const { addIdError, removeIdError, emptyIdError, hasError } = identifyInputError();
     const {showModal, closeModal, isModalOpen} = useModal();
-    const [errorResponse, setErrorResponse ] = useState<IErrorResponse>({
-        status: 0,
-        message: ''
-    });
     const [imgUri64, setImgUri64] = useState<string>('');
     const [preViewImg, setPreViewImg] = useState<string | null | ArrayBuffer>();
     const [errorFormatImg, setErrorFormatImg] = useState('');
@@ -48,15 +43,15 @@ const FormEditProfile = ({id_user, first_name, last_name, second_last_name, desc
     const handlePreViewImg = (files: Blob) => {
         const reader = new FileReader(); //What is this?
     
-            reader.onload = () => { //Why i have to use this??
-                setPreViewImg(reader.result);
-            }
+        reader.onload = () => { //Why i have to use this??
+            setPreViewImg(reader.result);
+        }
     
-            reader.onerror = () => {
-                setPreViewImg('');
-            }
+        reader.onerror = () => {
+            setPreViewImg('');
+        }
     
-            reader.readAsDataURL(files);
+        reader.readAsDataURL(files);
     }
 
     const emptyPhoto = () => {
@@ -206,7 +201,7 @@ const FormEditProfile = ({id_user, first_name, last_name, second_last_name, desc
             if(validateOnlyNumberLetters(description) && validateMaxLengthInput(description, 255) && validateMinLengthInput(description, 1)) removeIdError('description');
     
             
-            if(photo === ''){
+            if(photo === '' && !profile_photo){
                 addError('Debes agregar una foto para tu perfil');
                 addIdError('photo');
             }
@@ -237,33 +232,61 @@ const FormEditProfile = ({id_user, first_name, last_name, second_last_name, desc
                 return
             }
 
-            const bodyUploadImg = JSON.stringify({
-                "image": imgUri64
-            });
-            
-            const responseUrlImg = await fetchUploadImg(bodyUploadImg);
-        
-            if(!responseUrlImg) {
-                closeModal(); //Closing loadingForm modal
-        
-                setMessageResponse(responseUrlImg.message);
-                showModal('infoResponse');
-                return;
-            };
 
+            //Please review this, is horrible how it written
+            let objBodyRegister;
+            let responseUrlImg;
 
-            const objBodyRegister = JSON.stringify({
-                "idUser" : id_user,
-                "fName" : fName,
-                "lastname" : lastname,
-                "second_last_name": second_last_name,
-                "photo": responseUrlImg.message,
-                "age" : age ,
-                "description" : description,
-            });
-    
-            const responseUpdateUser = await fetchUpdateUser(objBodyRegister);
+            if(imgUri64){
+                const bodyUploadImg = JSON.stringify({
+                    "image": imgUri64
+                });
                 
+                responseUrlImg = await fetchUploadImg(bodyUploadImg);
+                
+                console.log('result img =>', responseUrlImg);
+
+                if(!responseUrlImg) {
+                    closeModal(); //Closing loadingForm modal
+    
+                    setMessageResponse(responseUrlImg.message);
+                    showModal('infoResponse');
+                    return;
+                };
+    
+                objBodyRegister = JSON.stringify({
+                    "idUser" : id_user,
+                    "fName" : fName,
+                    "lastname" : lastname,
+                    "second_last_name": second_last_name,
+                    "photo": responseUrlImg.message, 
+                    "age" : age ,
+                    "description" : description,
+                });
+            } else {
+                objBodyRegister = JSON.stringify({
+                    "idUser" : id_user,
+                    "fName" : fName,
+                    "lastname" : lastname,
+                    "second_last_name": second_last_name,
+                    "photo": profile_photo, 
+                    "age" : age ,
+                    "description" : description,
+                });
+            }
+            
+            const responseUpdateUser = await fetchUpdateUser(objBodyRegister);
+            
+            if(responseUpdateUser.status == 200) {
+                if(responseUrlImg.message){
+                    handleUpdateUser(fName, lastname, second_last_name, responseUrlImg.message, age, description);
+                } else {
+                    handleUpdateUser(fName, lastname, second_last_name, profile_photo, age, description);
+                }
+                
+               
+            }
+
             closeModal(); //Closing loadingForm modal
         
             setMessageResponse(responseUpdateUser.message);
@@ -380,7 +403,7 @@ const FormEditProfile = ({id_user, first_name, last_name, second_last_name, desc
                     label = {'Foto'}
                     type = {'file'}
                     name = {'photo'}
-                    required = {true}
+                    required = {false}
                     value={formValues.photo}
                     classes = {hasError('photo') ? ['error-class'] : ['normal-class']}
                     onChange={handleInputOnChange}
@@ -411,8 +434,8 @@ const FormEditProfile = ({id_user, first_name, last_name, second_last_name, desc
 
 
                 <Button
-                        id = 'btnRegister'
-                        text = 'Registrarse'
+                        id = 'btnUploadUser'
+                        text = 'Actualizar'
                         type = 'submit'
                         classes = {['backgorund-color-blue-violet', 'color-white']}
                 />

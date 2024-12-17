@@ -30,7 +30,11 @@ const ViewOurProfile = ({id_user, username, first_name, last_name, second_last_n
             <p>run = {run}</p>
             <p>dv run = {run_dv}</p>
             <p>Descripción = {description ? (description) : 'no description'}</p>
-            <p>img = {profile_photo ? (profile_photo) : 'no img'}</p>
+            {profile_photo ? (
+                <img src = {profile_photo} alt="imgProfile" />
+            ) : (
+                <p>no img</p>
+            )}
             <p>edad = {age}</p>
         </>
     )

@@ -42,7 +42,7 @@ function ProfileUser() {
 
             <Button 
                 id  = {'handlerViewForm'}
-                text  = {'Modificar Datos'}
+                text  = {isForm == 1 ? 'Volver vista sin edicion' : 'Editar'}
                 type  = {'buttom'}
                 classes  = {['']}
                 onClick  = {handlerTypeViewForm}

@@ -106,6 +106,18 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     const location = useLocation();
     const from = location.state?.from?.pathname || '/';
     
+    const handleUpdateUser = (fName: string, lastname: string, second_last_name: string, photo: string, age: string, description: string) => {
+        setUserData({
+            ...userData,
+            ['first_name']: fName,
+            ['last_name']: lastname,
+            ['second_last_name']: second_last_name,
+            ['profile_photo']: photo,
+            ['age']: parseInt(age),
+            ['description']: description
+        });
+    }
+
     const handleIsFromOtherPage = () => {
         setIsFromOtherPage(true);
     }
@@ -284,7 +296,8 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         login,
         logout,
         handleIsFromOtherPage,
-        handleErrorLoged
+        handleErrorLoged,
+        handleUpdateUser
     };
     
 

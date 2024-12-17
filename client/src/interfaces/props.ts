@@ -10,6 +10,7 @@ export interface IAuthContextType {
     logout: () => void;
     handleIsFromOtherPage: () => void;
     handleErrorLoged: (value: string) => void;
+    handleUpdateUser: (fName: string, lastname: string, second_last_name: string, photo: string, age: string, description: string) => void;
 }
 
 export interface IPublicRouteProps {
