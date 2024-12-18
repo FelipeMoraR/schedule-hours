@@ -56,6 +56,7 @@ const FormEditProfile = ({id_user, first_name, last_name, second_last_name, desc
 
     const emptyPhoto = () => {
         setPreViewImg('');
+        setImgUri64('');
         setFormValues({
             ...formValues,
             ['photo']: ''
@@ -233,18 +234,11 @@ const FormEditProfile = ({id_user, first_name, last_name, second_last_name, desc
             }
 
 
-            //Please review this, is horrible how it written
-            let objBodyRegister;
-            let responseUrlImg;
+            const bodyUploadImg = imgUri64 ? JSON.stringify({ "image": imgUri64 }) : null;
+            let responseUrlImg = null;
 
-            if(imgUri64){
-                const bodyUploadImg = JSON.stringify({
-                    "image": imgUri64
-                });
-                
+            if(bodyUploadImg) {
                 responseUrlImg = await fetchUploadImg(bodyUploadImg);
-                
-                console.log('result img =>', responseUrlImg);
 
                 if(!responseUrlImg) {
                     closeModal(); //Closing loadingForm modal
@@ -253,38 +247,25 @@ const FormEditProfile = ({id_user, first_name, last_name, second_last_name, desc
                     showModal('infoResponse');
                     return;
                 };
-    
-                objBodyRegister = JSON.stringify({
-                    "idUser" : id_user,
-                    "fName" : fName,
-                    "lastname" : lastname,
-                    "second_last_name": second_last_name,
-                    "photo": responseUrlImg.message, 
-                    "age" : age ,
-                    "description" : description,
-                });
-            } else {
-                objBodyRegister = JSON.stringify({
-                    "idUser" : id_user,
-                    "fName" : fName,
-                    "lastname" : lastname,
-                    "second_last_name": second_last_name,
-                    "photo": profile_photo, 
-                    "age" : age ,
-                    "description" : description,
-                });
             }
+
+            const img = imgUri64 ? responseUrlImg.message : profile_photo || ''
+         
+            const objBodyRegister = JSON.stringify({
+                "idUser" : id_user,
+                "fName" : fName,
+                "lastname" : lastname,
+                "second_last_name": second_last_name,
+                "photo": img, 
+                "age" : age ,
+                "description" : description,
+            });
+            
             
             const responseUpdateUser = await fetchUpdateUser(objBodyRegister);
             
             if(responseUpdateUser.status == 200) {
-                if(responseUrlImg.message){
-                    handleUpdateUser(fName, lastname, second_last_name, responseUrlImg.message, age, description);
-                } else {
-                    handleUpdateUser(fName, lastname, second_last_name, profile_photo, age, description);
-                }
-                
-               
+                handleUpdateUser(fName, lastname, second_last_name, img, age, description);    
             }
 
             closeModal(); //Closing loadingForm modal
