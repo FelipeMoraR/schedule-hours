@@ -145,6 +145,8 @@ export interface IClass {
     handleRemoveMember? : (id_user: number) => void;
     handleAddNewMember? : (member: IMember) => void;
     handleUploadMember? : (id_user: number) => void;
+    handleSetClassIsFull? : () => void;
+    handleUpdateStatusAllClass? : (id_user: any) => void;
 }
 
 export interface IViewClass {
@@ -164,6 +166,7 @@ export interface IViewClass {
     handleBack?: () => void;
     deleteClass? : (id_class: number, nameFolder: string, nameImg: string) => void;
     handleCancellClass?: (id_class: number) => void;
+    handleUpdateStatusAllClass? : (id_class: any) => void;
 }
 
 export interface IViewAllClases{

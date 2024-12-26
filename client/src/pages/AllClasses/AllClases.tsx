@@ -23,6 +23,11 @@ const AllClases = () => {
     const {userData} = useAuthContext();
     
 
+    const handleUpdateStatusAllClass = (id_class: any) => {
+        const classToUpdate = allClasses.find(cls => cls.id_class == id_class);
+        if(classToUpdate) classToUpdate.status_name = 'full';
+    }
+
     const handleViewDetailClass = async (id_class: any) => {
 
         const statusSesion = await validateSesion();
@@ -133,6 +138,7 @@ const AllClases = () => {
                             categories = {classData.categories}
                             time_class = {classData.time_class}
                             date_class = {classData.date_class}
+                            handleUpdateStatusAllClass = {handleUpdateStatusAllClass}
                         />
                     ) : (
                         <h1>Error no se encontró la clase</h1>

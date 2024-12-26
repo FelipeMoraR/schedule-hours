@@ -19,6 +19,7 @@ import convertBase64 from '../../utils/decodeImageBase64';
 import fetchUploadImg from "../../utils/FetchUploadImgClodify.ts";
 import fetchUpdateUser from "../../utils/FetchUpdateUser.ts";
 import { useAuthContext } from "../../hooks/authContext.tsx";
+import extractFolderNameImg from "../../utils/ExtractFolderNameImg.ts";
 
 const FormEditProfile = ({id_user, first_name, last_name, second_last_name, description, profile_photo, age}: IFormEditProfile) => {
     const {handleUpdateUser} = useAuthContext();
@@ -36,8 +37,8 @@ const FormEditProfile = ({id_user, first_name, last_name, second_last_name, desc
         "age" : age ? age.toString() : "",
         "description" : description ? description : "",
         "photo" : ""
-    })
-    
+    });
+
     const navigate = useNavigate();
     
     const handlePreViewImg = (files: Blob) => {
@@ -250,28 +251,42 @@ const FormEditProfile = ({id_user, first_name, last_name, second_last_name, desc
             }
 
             const img = imgUri64 ? responseUrlImg.message : profile_photo || ''
-         
-            const objBodyRegister = JSON.stringify({
-                "idUser" : id_user,
-                "fName" : fName,
-                "lastname" : lastname,
-                "second_last_name": second_last_name,
-                "photo": img, 
-                "age" : age ,
-                "description" : description,
-            });
             
+
+            const objBodyRegister = profile_photo && imgUri64 ? JSON.stringify({
+                    "idUser" : id_user,
+                    "fName" : fName,
+                    "lastname" : lastname,
+                    "second_last_name": second_last_name,
+                    "photo": img, 
+                    "age" : age ,
+                    "description" : description,
+                    "folder" : extractFolderNameImg(profile_photo).nameFolder,
+                    "nameImg" : extractFolderNameImg(profile_photo).nameImg 
+            
+            }) : JSON.stringify({
+                    "idUser" : id_user,
+                    "fName" : fName,
+                    "lastname" : lastname,
+                    "second_last_name": second_last_name,
+                    "photo": img, 
+                    "age" : age ,
+                    "description" : description,
+            })
             
             const responseUpdateUser = await fetchUpdateUser(objBodyRegister);
             
             if(responseUpdateUser.status == 200) {
                 handleUpdateUser(fName, lastname, second_last_name, img, age, description);    
             }
+            
+            setPreViewImg(null);
 
             closeModal(); //Closing loadingForm modal
         
             setMessageResponse(responseUpdateUser.message);
             showModal('infoResponse');
+
         }
     
     return (

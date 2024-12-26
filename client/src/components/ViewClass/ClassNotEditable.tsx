@@ -8,7 +8,7 @@ import { useState } from "react";
 import validateSesion from "../../utils/SesionValidator";
 import { useNavigate } from "react-router-dom";
 
-const ClassNotEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, type_user, categories, members, time_class, date_class, handleAddNewMember } : IClass) => {
+const ClassNotEditable = ({ id_class, class_name, description, max_number_member, photo, status_name, type_user, categories, members, time_class, date_class, handleAddNewMember, handleSetClassIsFull, handleUpdateStatusAllClass} : IClass) => {
     
     const {userData} = useAuthContext();
     const idUser = userData.id_user;
@@ -79,6 +79,8 @@ const ClassNotEditable = ({ id_class, class_name, description, max_number_member
         if (result.data && result.data.userInserted == 1 && result.data.userExistInClass == 0){
             setMsjResponse('Haz ingresado a la clase!');
             if(handleAddNewMember) handleAddNewMember(memberSesion);
+            if(handleSetClassIsFull) handleSetClassIsFull();
+            if(handleUpdateStatusAllClass) handleUpdateStatusAllClass(id_class);
             setIsLoadingEnroll(false);
         }
 
@@ -164,7 +166,7 @@ const ClassNotEditable = ({ id_class, class_name, description, max_number_member
                 }
 
                 {
-                    type_user == 2  && status_name == 'open' && !members?.some(el => el.username.includes(userData.username)) ? (
+                    type_user == 2  && status_name != 'full' && !members?.some(el => el.username.includes(userData.username)) ? (
                         <div>
                             <Button 
                                 id = "joinStudent"

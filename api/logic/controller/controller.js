@@ -1252,7 +1252,7 @@ const viewProfile = async (req, res) => {
 
 const updateUser = async (req, res) => {
     try{
-        const { idUser, fName, lastname, second_last_name, photo, age, description } = req.body;
+        const { idUser, fName, lastname, second_last_name, photo, age, description, folder, nameImg } = req.body;
         
         const [_, rowsAffected] = await db.sequelize.query('UPDATE USER SET first_name = :fName, last_name = :lastname, second_last_name = :secondLastName, description = :description, profile_photo = :photo, age = :age WHERE id_user = :idUser', {
             replacements: {
@@ -1269,6 +1269,17 @@ const updateUser = async (req, res) => {
 
         if(rowsAffected == 0) return res.status(200).json({status: 200, message: 'No changes updated'});
 
+        if(folder && nameImg) {
+            try{
+                const msjDeleteCloudImg = await deleteCloudImg(folder, nameImg)
+            
+                if(msjDeleteCloudImg.result !== 'ok') throw new Error('Img not deleted');
+            
+                return res.status(200).json({status: 200, message: 'User updated and img updated, rows affected => ' + rowsAffected });
+            } catch(err){
+                throw new Error(err);
+            }    
+        }
         
         return res.status(200).json({status: 200, message: 'User updated, rows affected => ' + rowsAffected });
     } catch(err){
@@ -1276,9 +1287,6 @@ const updateUser = async (req, res) => {
         return res.status(500).json({status: 500, message: 'Error:: ' + err})
     }
 }   
-
-
-
 
 
 module.exports = {

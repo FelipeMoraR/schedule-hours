@@ -7,9 +7,10 @@ import { useEffect, useState } from "react";
 
 
 
-const ViewClass = ({id_class, class_name, description, max_number_member, photo, status_name, type_user, isEditable, categories, allCategories, allStatus, handleBack, deleteClass, time_class, date_class, handleCancellClass} : IViewClass) => {
+const ViewClass = ({id_class, class_name, description, max_number_member, photo, status_name, type_user, isEditable, categories, allCategories, allStatus, handleBack, deleteClass, time_class, date_class, handleCancellClass, handleUpdateStatusAllClass} : IViewClass) => {
     const [membersClass, setMembersClass] = useState<Array<IMember>>([]);
     const [isLoadingMembers, setIsLoadingMembers] = useState<boolean>(true);
+    const [statusClass, setStatusClass] = useState<string>(status_name);
 
     const handleGetMembers = async () => {
         const result = await fetchGetAllMembersClass(id_class.toString());
@@ -46,6 +47,10 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
         
     }
 
+    const handleSetClassIsFull = () => {
+        setStatusClass('full');
+    }
+
    
 
     useEffect(() => {
@@ -76,13 +81,15 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                     description = {description}
                     max_number_member = {max_number_member}
                     photo = {photo}
-                    status_name = {status_name}
+                    status_name = {statusClass}
                     type_user = {type_user}
                     categories = {categories}
                     members = {membersClass}
                     time_class = {time_class}
                     date_class = {date_class}
                     handleAddNewMember = {handleAddNewMember}
+                    handleSetClassIsFull = {handleSetClassIsFull}
+                    handleUpdateStatusAllClass = {handleUpdateStatusAllClass}
                 />
             </>
         )
@@ -104,7 +111,7 @@ const ViewClass = ({id_class, class_name, description, max_number_member, photo,
                 description = {description}
                 max_number_member = {max_number_member}
                 photo = {photo}
-                status_name = {status_name}
+                status_name = {statusClass}
                 deleteClass = {deleteClass}
                 categories = {categories}
                 allCategories = {allCategories}
